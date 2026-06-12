@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+:root {
+  --background: #000000;
+  --foreground: #e1dcc9;
+  --accent: #e1dcc9;
+  --accent-2: #412d15;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html,
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+body {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--accent) 60%, transparent);
+  color: white;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+@keyframes organic-split-a {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-30px, 0);
+  }
+}
+@keyframes organic-split-b {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(30px, 0);
+  }
+}
+.organic-split-a {
+  transform-origin: 100px 100px;
+  animation: organic-split-a 2.6s ease-in-out infinite;
+}
+.organic-split-b {
+  transform-origin: 100px 100px;
+  animation: organic-split-b 2.6s ease-in-out infinite;
+}

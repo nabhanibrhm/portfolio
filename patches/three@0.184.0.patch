@@ -1,0 +1,30 @@
+diff --git a/build/three.cjs b/build/three.cjs
+index 6531748d1acdd9d85c4299d15ff6c3ffa3dfeaa0..8ca2291d2dc6984fc351282c20014e12b6047b1a 100644
+--- a/build/three.cjs
++++ b/build/three.cjs
+@@ -55966,7 +55966,9 @@ class Clock {
+ 		 */
+ 		this.running = false;
+ 
+-		warn( 'Clock: This module has been deprecated. Please use THREE.Timer instead.' ); // @deprecated, r183
++		// @deprecated, r183 — deprecation warn removed via pnpm patch: @react-three/fiber@9.x still
++		// constructs THREE.Clock internally and relies on its full API (start/stop/elapsedTime/oldTime),
++		// so Timer is not a drop-in. Remove this patch once R3F migrates off Clock.
+ 
+ 	}
+ 
+diff --git a/build/three.core.js b/build/three.core.js
+index ef6859448e18389b1e478db64be78293d53058e4..26044d4a5340e0ecff63e13373802c8082d03f05 100644
+--- a/build/three.core.js
++++ b/build/three.core.js
+@@ -55986,7 +55986,9 @@ class Clock {
+ 		 */
+ 		this.running = false;
+ 
+-		warn( 'Clock: This module has been deprecated. Please use THREE.Timer instead.' ); // @deprecated, r183
++		// @deprecated, r183 — deprecation warn removed via pnpm patch: @react-three/fiber@9.x still
++		// constructs THREE.Clock internally and relies on its full API (start/stop/elapsedTime/oldTime),
++		// so Timer is not a drop-in. Remove this patch once R3F migrates off Clock.
+ 
+ 	}
+ 
