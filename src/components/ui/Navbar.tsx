@@ -4,9 +4,9 @@ import Link from "next/link";
 import { motion } from "motion/react";
 
 const links: { href: string; label: string }[] = [
-  // { href: "#about", label: "About" },
-  // { href: "#projects", label: "Projects" },
-  // { href: "#contact", label: "Contact" },
+  { href: "#about", label: "About" },
+  { href: "#projects", label: "Projects" },
+  { href: "#contact", label: "Contact" },
 ];
 
 export default function Navbar() {
@@ -24,18 +24,6 @@ export default function Navbar() {
         >
           luthfi<span className="text-foreground">.</span>dev
         </Link>
-        <ul className="flex items-center gap-1 text-sm">
-          {links.map((l) => (
-            <li key={l.href}>
-              <a
-                href={l.href}
-                className="rounded-full px-3 py-1.5 text-foreground/70 transition hover:bg-foreground/10 hover:text-foreground"
-              >
-                {l.label}
-              </a>
-            </li>
-          ))}
-        </ul>
       </nav>
     </motion.header>
   );
