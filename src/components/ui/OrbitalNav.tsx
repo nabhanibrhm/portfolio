@@ -9,6 +9,7 @@ import {
   Mail,
   Briefcase,
   GraduationCap,
+  X,
   type LucideIcon,
 } from "lucide-react";
 import { site, skills, projects, experiences, education } from "@/data/site";
@@ -21,14 +22,39 @@ interface NavNode {
   preview: React.ReactNode;
 }
 
-const RADIUS = 300;
+function useViewportSizing() {
+  const [vw, setVw] = useState(1280);
+
+  useEffect(() => {
+    const onResize = () => setVw(window.innerWidth);
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  const isMobile = vw < 640;
+  const isTablet = vw >= 640 && vw < 1024;
+
+  // ringRadius = the dashed circle. nodes sit OUTSIDE it (ring + offset).
+  const ringRadius = isMobile ? 86 : isTablet ? 200 : 270;
+  const nodeOffset = isMobile ? 30 : isTablet ? 46 : 56;
+
+  return {
+    ringRadius,
+    nodeRadius: ringRadius + nodeOffset,
+    memojiSize: isMobile ? 140 : isTablet ? 300 : 440,
+    cardWidth: isMobile ? 250 : 320,
+    pad: isMobile ? 44 : 180,
+    isMobile,
+  };
+}
 
 const navNodes: NavNode[] = [
   {
     id: 1,
     title: "About",
     icon: User,
-    angleDeg: -90,
+    angleDeg: -54,
     preview: (
       <div className="space-y-4">
         <p className="text-sm leading-relaxed text-white/70">{site.tagline}</p>
@@ -54,7 +80,7 @@ const navNodes: NavNode[] = [
     id: 2,
     title: "Experiences",
     icon: Briefcase,
-    angleDeg: -18,
+    angleDeg: 18,
     preview: (
       <ul className="space-y-4">
         {experiences.map((e) => (
@@ -80,7 +106,7 @@ const navNodes: NavNode[] = [
     id: 3,
     title: "Education",
     icon: GraduationCap,
-    angleDeg: 54,
+    angleDeg: 90,
     preview: (
       <ul className="space-y-4">
         {education.map((ed) => (
@@ -101,7 +127,7 @@ const navNodes: NavNode[] = [
     id: 4,
     title: "Projects",
     icon: Code2,
-    angleDeg: 126,
+    angleDeg: 162,
     preview: (
       <ul className="space-y-4">
         {projects.map((p, i) => (
@@ -127,7 +153,7 @@ const navNodes: NavNode[] = [
     id: 5,
     title: "Contact",
     icon: Mail,
-    angleDeg: 198,
+    angleDeg: 234,
     preview: (
       <div className="space-y-4">
         <p className="text-sm text-white/60">
@@ -162,10 +188,12 @@ export default function OrbitalNav() {
   const [rotationAngle, setRotationAngle] = useState(0);
   const [autoRotate, setAutoRotate] = useState(true);
   const [activeId, setActiveId] = useState<number | null>(null);
-  const [clickedY, setClickedY] = useState<Record<number, number>>({});
+  const [openId, setOpenId] = useState<number | null>(null);
   const [expression, setExpression] = useState<Expression>("flat");
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const sadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { ringRadius, nodeRadius, memojiSize, cardWidth, pad, isMobile } =
+    useViewportSizing();
 
   useEffect(() => {
     if (autoRotate) {
@@ -189,8 +217,8 @@ export default function OrbitalNav() {
   const getPos = (angleDeg: number) => {
     const angle = (angleDeg + rotationAngle) % 360;
     const rad = (angle * Math.PI) / 180;
-    const x = RADIUS * Math.cos(rad);
-    const y = RADIUS * Math.sin(rad);
+    const x = nodeRadius * Math.cos(rad);
+    const y = nodeRadius * Math.sin(rad);
     const opacity = Math.max(0.45, Math.min(1, 0.45 + 0.55 * ((1 + Math.sin(rad)) / 2)));
     const zIndex = Math.round(100 + 60 * Math.cos(rad));
     return { x, y, opacity, zIndex };
@@ -205,9 +233,10 @@ export default function OrbitalNav() {
     }, 900);
   };
 
-  const handleNodeClick = (id: number, posY: number) => {
+  const handleNodeClick = (id: number) => {
     if (activeId === id) {
       setActiveId(null);
+      setOpenId(null);
       setAutoRotate(true);
       pulseSad();
     } else {
@@ -216,28 +245,33 @@ export default function OrbitalNav() {
         sadTimer.current = null;
       }
       setActiveId(id);
+      setOpenId(id);
       setAutoRotate(false);
-      setClickedY((prev) => ({ ...prev, [id]: posY }));
       setExpression("smile");
     }
   };
 
-  const handleBgClick = () => {
+  const closeCard = () => {
     if (activeId !== null) pulseSad();
     setActiveId(null);
+    setOpenId(null);
     setAutoRotate(true);
+  };
+
+  const handleBgClick = () => {
+    closeCard();
   };
 
   return (
     <div
       className="relative flex items-center justify-center"
-      style={{ width: RADIUS * 2 + 180, height: RADIUS * 2 + 180 }}
+      style={{ width: nodeRadius * 2 + pad, height: nodeRadius * 2 + pad }}
       onClick={handleBgClick}
     >
-      {/* Orbit ring */}
+      {/* Orbit ring (dashed circle sits inside the nodes) */}
       <div
         className="absolute rounded-full border border-dashed border-white/10"
-        style={{ width: RADIUS * 2, height: RADIUS * 2 }}
+        style={{ width: ringRadius * 2, height: ringRadius * 2 }}
       />
 
       {/* Memoji center */}
@@ -250,14 +284,18 @@ export default function OrbitalNav() {
         <div className="absolute inset-0 flex items-center justify-center">
           <div
             className="absolute rounded-full border border-white/10 animate-ping opacity-20"
-            style={{ width: 220, height: 220 }}
+            style={{ width: memojiSize * 0.48, height: memojiSize * 0.48 }}
           />
           <div
             className="absolute rounded-full border border-white/5 animate-ping opacity-10"
-            style={{ width: 280, height: 280, animationDelay: "0.8s" }}
+            style={{
+              width: memojiSize * 0.6,
+              height: memojiSize * 0.6,
+              animationDelay: "0.8s",
+            }}
           />
         </div>
-        <Memoji expression={expression} size={460} priority />
+        <Memoji expression={expression} size={memojiSize} priority />
       </motion.div>
 
       {/* Orbital nodes */}
@@ -265,7 +303,8 @@ export default function OrbitalNav() {
         const pos = getPos(node.angleDeg);
         const isActive = activeId === node.id;
         const Icon = node.icon;
-        const cardAbove = (clickedY[node.id] ?? pos.y) > 40;
+        // Open the card above the node when it's in the lower half, else below.
+        const cardAbove = pos.y > 0;
 
         return (
           <motion.div
@@ -286,30 +325,35 @@ export default function OrbitalNav() {
             }}
             onClick={(e) => {
               e.stopPropagation();
-              handleNodeClick(node.id, pos.y);
+              handleNodeClick(node.id);
             }}
           >
-            {/* Node pill */}
+            {/* Node pill — icon-only on mobile, icon + label otherwise */}
             <div
-              className={`flex items-center gap-2.5 rounded-full border px-6 py-3 text-base backdrop-blur-sm transition-all duration-300 ${
+              className={`flex items-center justify-center rounded-full border backdrop-blur-sm transition-all duration-300 ${
+                isMobile ? "h-12 w-12" : "gap-2.5 px-6 py-3 text-base"
+              } ${
                 isActive
                   ? "border-white bg-white text-black shadow-lg shadow-white/20"
                   : "border-white/20 bg-black/40 text-white/80 hover:border-white/40 hover:bg-white/10 hover:text-white"
               }`}
             >
-              <Icon size={17} />
-              <span className="font-medium tracking-wide">{node.title}</span>
+              <Icon size={isMobile ? 18 : 17} />
+              {!isMobile && (
+                <span className="font-medium tracking-wide">{node.title}</span>
+              )}
             </div>
 
-            {/* Preview card */}
+            {/* Preview card (desktop: anchored to the node) */}
             <AnimatePresence>
-              {isActive && (
+              {!isMobile && openId === node.id && (
                 <motion.div
                   initial={{ opacity: 0, y: cardAbove ? 8 : -8, scale: 0.96 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: cardAbove ? 8 : -8, scale: 0.96 }}
                   transition={{ duration: 0.2 }}
-                  className={`absolute left-1/2 w-80 -translate-x-1/2 rounded-3xl border border-white/20 bg-black/25 p-6 shadow-2xl shadow-black/40 backdrop-blur-2xl backdrop-saturate-150 ${
+                  style={{ width: cardWidth }}
+                  className={`absolute left-1/2 -translate-x-1/2 rounded-3xl border border-white/20 bg-black/25 p-6 shadow-2xl shadow-black/40 backdrop-blur-2xl backdrop-saturate-150 ${
                     cardAbove ? "bottom-16" : "top-16"
                   }`}
                   onClick={(e) => e.stopPropagation()}
@@ -322,10 +366,21 @@ export default function OrbitalNav() {
                   />
 
                   {/* Card header */}
-                  <div className="mb-4">
+                  <div className="mb-4 flex items-center justify-between">
                     <span className="font-mono text-xs uppercase tracking-widest text-white/40">
                       {node.title}
                     </span>
+                    <button
+                      type="button"
+                      aria-label="Close"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        closeCard();
+                      }}
+                      className="flex h-7 w-7 items-center justify-center rounded-full border border-white/15 text-white/60 transition hover:bg-white/10 hover:text-white"
+                    >
+                      <X size={14} />
+                    </button>
                   </div>
 
                   {node.preview}
@@ -335,6 +390,47 @@ export default function OrbitalNav() {
           </motion.div>
         );
       })}
+
+      {/* Preview card (mobile: centered over the orbit) */}
+      {isMobile && (
+        <AnimatePresence>
+          {openId !== null &&
+            (() => {
+              const node = navNodes.find((n) => n.id === openId);
+              if (!node) return null;
+              return (
+                <motion.div
+                  key={node.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  style={{ width: cardWidth }}
+                  className="absolute left-1/2 top-1/2 z-[250] -translate-x-1/2 -translate-y-1/2 rounded-3xl border border-white/20 bg-black/40 p-6 shadow-2xl shadow-black/50 backdrop-blur-2xl backdrop-saturate-150"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="mb-4 flex items-center justify-between">
+                    <span className="font-mono text-xs uppercase tracking-widest text-white/40">
+                      {node.title}
+                    </span>
+                    <button
+                      type="button"
+                      aria-label="Close"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        closeCard();
+                      }}
+                      className="flex h-7 w-7 items-center justify-center rounded-full border border-white/15 text-white/60 transition hover:bg-white/10 hover:text-white"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                  {node.preview}
+                </motion.div>
+              );
+            })()}
+        </AnimatePresence>
+      )}
     </div>
   );
 }
