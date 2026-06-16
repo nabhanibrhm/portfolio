@@ -42,7 +42,7 @@ function useViewportSizing() {
   return {
     ringRadius,
     nodeRadius: ringRadius + nodeOffset,
-    memojiSize: isMobile ? 140 : isTablet ? 300 : 440,
+    memojiSize: isMobile ? 190 : isTablet ? 400 : 580,
     cardWidth: isMobile ? 250 : 320,
     pad: isMobile ? 44 : 180,
     isMobile,

@@ -115,18 +115,17 @@ export default function Memoji({
       <motion.div
         animate={controls}
         style={{
-          width: size,
-          height: size,
           transformOrigin: "center bottom",
         }}
       >
         <Image
           src={SOURCES[shown]}
           alt={`Memoji ${shown}`}
-          width={size}
-          height={size}
+          width={1024}
+          height={1536}
           priority={priority}
           draggable={false}
+          style={{ height: size, width: "auto" }}
         />
       </motion.div>
     </motion.div>

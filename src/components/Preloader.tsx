@@ -45,7 +45,13 @@ export default function Preloader() {
   };
 
   return (
-    <AnimatePresence>
+    <AnimatePresence
+      onExitComplete={() => {
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event("preloader:complete"));
+        }
+      }}
+    >
       {!done && (
         <motion.div
           key="preloader"
