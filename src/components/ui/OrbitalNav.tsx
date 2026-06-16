@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import Image from "next/image";
+import Memoji, { type Expression } from "@/components/ui/Memoji";
 import {
   User,
   Code2,
@@ -163,7 +163,9 @@ export default function OrbitalNav() {
   const [autoRotate, setAutoRotate] = useState(true);
   const [activeId, setActiveId] = useState<number | null>(null);
   const [clickedY, setClickedY] = useState<Record<number, number>>({});
+  const [expression, setExpression] = useState<Expression>("flat");
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const sadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (autoRotate) {
@@ -178,6 +180,12 @@ export default function OrbitalNav() {
     };
   }, [autoRotate]);
 
+  useEffect(() => {
+    return () => {
+      if (sadTimer.current) clearTimeout(sadTimer.current);
+    };
+  }, []);
+
   const getPos = (angleDeg: number) => {
     const angle = (angleDeg + rotationAngle) % 360;
     const rad = (angle * Math.PI) / 180;
@@ -188,18 +196,39 @@ export default function OrbitalNav() {
     return { x, y, opacity, zIndex };
   };
 
+  const pulseSad = () => {
+    if (sadTimer.current) clearTimeout(sadTimer.current);
+    setExpression("sad");
+    sadTimer.current = setTimeout(() => {
+      sadTimer.current = null;
+      setExpression("flat");
+    }, 900);
+  };
+
   const handleNodeClick = (id: number, posY: number) => {
     if (activeId === id) {
       setActiveId(null);
       setAutoRotate(true);
+      pulseSad();
     } else {
+      if (sadTimer.current) {
+        clearTimeout(sadTimer.current);
+        sadTimer.current = null;
+      }
       setActiveId(id);
       setAutoRotate(false);
       setClickedY((prev) => ({ ...prev, [id]: posY }));
+      setExpression("smile");
     }
   };
 
+  const handleNodeHover = (entering: boolean) => {
+    if (activeId !== null || sadTimer.current) return;
+    setExpression(entering ? "smile" : "flat");
+  };
+
   const handleBgClick = () => {
+    if (activeId !== null) pulseSad();
     setActiveId(null);
     setAutoRotate(true);
   };
@@ -233,13 +262,7 @@ export default function OrbitalNav() {
             style={{ width: 200, height: 200, animationDelay: "0.8s" }}
           />
         </div>
-        <Image
-          src="/memoji.png"
-          alt="Luthfi Nabhan Ibrahim"
-          width={340}
-          height={340}
-          priority
-        />
+        <Memoji expression={expression} size={340} priority />
       </motion.div>
 
       {/* Orbital nodes */}
@@ -270,6 +293,8 @@ export default function OrbitalNav() {
               e.stopPropagation();
               handleNodeClick(node.id, pos.y);
             }}
+            onMouseEnter={() => handleNodeHover(true)}
+            onMouseLeave={() => handleNodeHover(false)}
           >
             {/* Node pill */}
             <div
@@ -291,7 +316,7 @@ export default function OrbitalNav() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: cardAbove ? 8 : -8, scale: 0.96 }}
                   transition={{ duration: 0.2 }}
-                  className={`absolute left-1/2 w-60 -translate-x-1/2 rounded-2xl border border-white/15 bg-black/85 p-4 shadow-2xl shadow-black/60 backdrop-blur-xl ${
+                  className={`absolute left-1/2 w-60 -translate-x-1/2 rounded-2xl border border-white/20 bg-black/25 p-4 shadow-2xl shadow-black/40 backdrop-blur-2xl backdrop-saturate-150 ${
                     cardAbove ? "bottom-14" : "top-14"
                   }`}
                   onClick={(e) => e.stopPropagation()}
