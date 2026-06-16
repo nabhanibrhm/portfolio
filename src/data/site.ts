@@ -31,6 +31,44 @@ export type Project = {
   href?: string;
 };
 
+export type Experience = {
+  role: string;
+  company: string;
+  period: string;
+  description: string;
+};
+
+export const experiences: Experience[] = [
+  {
+    role: "Data Engineer",
+    company: "Sinarmas",
+    period: "2023 — Present",
+    description:
+      "Building data platforms, streaming pipelines, and cost-aware lakehouse infrastructure.",
+  },
+  {
+    role: "Analytics Engineer",
+    company: "Previous Co.",
+    period: "2021 — 2023",
+    description:
+      "Owned dbt models and semantic layer powering self-serve analytics.",
+  },
+];
+
+export type Education = {
+  degree: string;
+  school: string;
+  period: string;
+};
+
+export const education: Education[] = [
+  {
+    degree: "B.Sc. Computer Science",
+    school: "University",
+    period: "2017 — 2021",
+  },
+];
+
 export const projects: Project[] = [
   {
     title: "Realtime CDC Pipeline",
