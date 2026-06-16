@@ -21,7 +21,7 @@ interface NavNode {
   preview: React.ReactNode;
 }
 
-const RADIUS = 230;
+const RADIUS = 300;
 
 const navNodes: NavNode[] = [
   {
@@ -30,18 +30,18 @@ const navNodes: NavNode[] = [
     icon: User,
     angleDeg: -90,
     preview: (
-      <div className="space-y-3">
-        <p className="text-xs leading-relaxed text-white/70">{site.tagline}</p>
-        <p className="text-[11px] leading-relaxed text-white/50">
+      <div className="space-y-4">
+        <p className="text-sm leading-relaxed text-white/70">{site.tagline}</p>
+        <p className="text-xs leading-relaxed text-white/50">
           {site.location} · {site.role}. I design data systems that scale with
           the business — pragmatic pipelines, observable infrastructure, and the
           odd shader to keep things fun.
         </p>
-        <div className="flex flex-wrap gap-1">
+        <div className="flex flex-wrap gap-1.5">
           {skills.map((s) => (
             <span
               key={s}
-              className="rounded-full border border-white/15 px-2 py-0.5 font-mono text-[10px] text-white/60"
+              className="rounded-full border border-white/15 px-2.5 py-1 font-mono text-[11px] text-white/60"
             >
               {s}
             </span>
@@ -56,19 +56,19 @@ const navNodes: NavNode[] = [
     icon: Briefcase,
     angleDeg: -18,
     preview: (
-      <ul className="space-y-3">
+      <ul className="space-y-4">
         {experiences.map((e) => (
           <li key={e.role + e.company}>
             <div className="flex items-baseline justify-between gap-2">
-              <span className="text-xs font-medium text-white/90">
+              <span className="text-sm font-medium text-white/90">
                 {e.role}
               </span>
-              <span className="font-mono text-[10px] text-white/40">
+              <span className="font-mono text-[11px] text-white/40">
                 {e.period}
               </span>
             </div>
-            <div className="text-[11px] text-white/60">{e.company}</div>
-            <p className="mt-1 text-[11px] leading-relaxed text-white/45">
+            <div className="text-xs text-white/60">{e.company}</div>
+            <p className="mt-1 text-xs leading-relaxed text-white/45">
               {e.description}
             </p>
           </li>
@@ -82,13 +82,13 @@ const navNodes: NavNode[] = [
     icon: GraduationCap,
     angleDeg: 54,
     preview: (
-      <ul className="space-y-2.5">
+      <ul className="space-y-4">
         {education.map((ed) => (
           <li key={ed.degree}>
-            <div className="text-xs font-medium text-white/90">{ed.degree}</div>
+            <div className="text-sm font-medium text-white/90">{ed.degree}</div>
             <div className="flex items-baseline justify-between gap-2">
-              <span className="text-[11px] text-white/60">{ed.school}</span>
-              <span className="font-mono text-[10px] text-white/40">
+              <span className="text-xs text-white/60">{ed.school}</span>
+              <span className="font-mono text-[11px] text-white/40">
                 {ed.period}
               </span>
             </div>
@@ -103,18 +103,18 @@ const navNodes: NavNode[] = [
     icon: Code2,
     angleDeg: 126,
     preview: (
-      <ul className="space-y-3">
+      <ul className="space-y-4">
         {projects.map((p, i) => (
-          <li key={p.title} className="flex items-start gap-2">
-            <span className="mt-0.5 font-mono text-[10px] text-white/30">
+          <li key={p.title} className="flex items-start gap-2.5">
+            <span className="mt-0.5 font-mono text-[11px] text-white/30">
               0{i + 1}
             </span>
             <div>
-              <div className="text-xs font-medium text-white/90">{p.title}</div>
-              <p className="mt-0.5 text-[11px] leading-relaxed text-white/50">
+              <div className="text-sm font-medium text-white/90">{p.title}</div>
+              <p className="mt-0.5 text-xs leading-relaxed text-white/50">
                 {p.description}
               </p>
-              <div className="mt-1 font-mono text-[10px] text-white/40">
+              <div className="mt-1 font-mono text-[11px] text-white/40">
                 {p.tags.join(" · ")}
               </div>
             </div>
@@ -129,26 +129,26 @@ const navNodes: NavNode[] = [
     icon: Mail,
     angleDeg: 198,
     preview: (
-      <div className="space-y-3">
-        <p className="text-xs text-white/60">
+      <div className="space-y-4">
+        <p className="text-sm text-white/60">
           Open to data engineering roles and consulting.
         </p>
         <a
           href={`mailto:${site.email}`}
-          className="block font-mono text-[11px] text-white/80 transition hover:text-white"
+          className="block font-mono text-xs text-white/80 transition hover:text-white"
         >
           {site.email}
         </a>
         <div className="flex gap-2">
           <a
             href={site.social.github}
-            className="rounded-full border border-white/15 px-3 py-1 text-[11px] text-white/60 transition hover:bg-white/10 hover:text-white"
+            className="rounded-full border border-white/15 px-4 py-1.5 text-xs text-white/60 transition hover:bg-white/10 hover:text-white"
           >
             GitHub
           </a>
           <a
             href={site.social.linkedin}
-            className="rounded-full border border-white/15 px-3 py-1 text-[11px] text-white/60 transition hover:bg-white/10 hover:text-white"
+            className="rounded-full border border-white/15 px-4 py-1.5 text-xs text-white/60 transition hover:bg-white/10 hover:text-white"
           >
             LinkedIn
           </a>
@@ -222,11 +222,6 @@ export default function OrbitalNav() {
     }
   };
 
-  const handleNodeHover = (entering: boolean) => {
-    if (activeId !== null || sadTimer.current) return;
-    setExpression(entering ? "smile" : "flat");
-  };
-
   const handleBgClick = () => {
     if (activeId !== null) pulseSad();
     setActiveId(null);
@@ -255,14 +250,14 @@ export default function OrbitalNav() {
         <div className="absolute inset-0 flex items-center justify-center">
           <div
             className="absolute rounded-full border border-white/10 animate-ping opacity-20"
-            style={{ width: 160, height: 160 }}
+            style={{ width: 220, height: 220 }}
           />
           <div
             className="absolute rounded-full border border-white/5 animate-ping opacity-10"
-            style={{ width: 200, height: 200, animationDelay: "0.8s" }}
+            style={{ width: 280, height: 280, animationDelay: "0.8s" }}
           />
         </div>
-        <Memoji expression={expression} size={340} priority />
+        <Memoji expression={expression} size={460} priority />
       </motion.div>
 
       {/* Orbital nodes */}
@@ -293,18 +288,16 @@ export default function OrbitalNav() {
               e.stopPropagation();
               handleNodeClick(node.id, pos.y);
             }}
-            onMouseEnter={() => handleNodeHover(true)}
-            onMouseLeave={() => handleNodeHover(false)}
           >
             {/* Node pill */}
             <div
-              className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm backdrop-blur-sm transition-all duration-300 ${
+              className={`flex items-center gap-2.5 rounded-full border px-6 py-3 text-base backdrop-blur-sm transition-all duration-300 ${
                 isActive
                   ? "border-white bg-white text-black shadow-lg shadow-white/20"
                   : "border-white/20 bg-black/40 text-white/80 hover:border-white/40 hover:bg-white/10 hover:text-white"
               }`}
             >
-              <Icon size={13} />
+              <Icon size={17} />
               <span className="font-medium tracking-wide">{node.title}</span>
             </div>
 
@@ -316,8 +309,8 @@ export default function OrbitalNav() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: cardAbove ? 8 : -8, scale: 0.96 }}
                   transition={{ duration: 0.2 }}
-                  className={`absolute left-1/2 w-60 -translate-x-1/2 rounded-2xl border border-white/20 bg-black/25 p-4 shadow-2xl shadow-black/40 backdrop-blur-2xl backdrop-saturate-150 ${
-                    cardAbove ? "bottom-14" : "top-14"
+                  className={`absolute left-1/2 w-80 -translate-x-1/2 rounded-3xl border border-white/20 bg-black/25 p-6 shadow-2xl shadow-black/40 backdrop-blur-2xl backdrop-saturate-150 ${
+                    cardAbove ? "bottom-16" : "top-16"
                   }`}
                   onClick={(e) => e.stopPropagation()}
                 >
@@ -329,8 +322,8 @@ export default function OrbitalNav() {
                   />
 
                   {/* Card header */}
-                  <div className="mb-3">
-                    <span className="font-mono text-[10px] uppercase tracking-widest text-white/40">
+                  <div className="mb-4">
+                    <span className="font-mono text-xs uppercase tracking-widest text-white/40">
                       {node.title}
                     </span>
                   </div>
