@@ -23,28 +23,46 @@ interface NavNode {
 }
 
 function useViewportSizing() {
-  const [vw, setVw] = useState(1280);
+  const [{ vw, vh }, setVp] = useState({ vw: 1280, vh: 800 });
 
   useEffect(() => {
-    const onResize = () => setVw(window.innerWidth);
+    const onResize = () =>
+      setVp({ vw: window.innerWidth, vh: window.innerHeight });
     onResize();
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
   const isMobile = vw < 640;
-  const isTablet = vw >= 640 && vw < 1024;
+  const isStacked = vw < 1536; // matches the Hero's stacked → row breakpoint
 
-  // ringRadius = the dashed circle. nodes sit OUTSIDE it (ring + offset).
-  const ringRadius = isMobile ? 86 : isTablet ? 200 : 270;
-  const nodeOffset = isMobile ? 30 : isTablet ? 46 : 56;
+  // padX clears the wide node pills horizontally; padY only clears their height.
+  const padX = isMobile ? 40 : isStacked ? 96 : 176;
+  const padY = isMobile ? 36 : 52;
+
+  // Space the orbital nav may occupy. In the stacked layout the text sits above
+  // it, so reserve vertical room for that; in the row layout it gets the height.
+  const reservedForText = isStacked ? (isMobile ? 236 : 300) : 0;
+  const navMaxH = vh - reservedForText - (isStacked ? 96 : 48);
+  const navMaxW = (isStacked ? vw : Math.min(vw, 1600) * 0.52) - 32;
+
+  // nodeRadius (half the orbit) fits whichever budget is tighter, so the hero
+  // never needs to scroll. ringRadius/memojiSize are derived to keep the nodes
+  // outside the memoji and the memoji inside the dashed ring.
+  const nodeRadius = Math.max(
+    isMobile ? 92 : 150,
+    Math.min(326, (navMaxH - padY) / 2, (navMaxW - padX) / 2),
+  );
 
   return {
-    ringRadius,
-    nodeRadius: ringRadius + nodeOffset,
-    memojiSize: isMobile ? 190 : isTablet ? 400 : 580,
+    ringRadius: nodeRadius * 0.82,
+    nodeRadius,
+    memojiSize: nodeRadius * 1.55,
     cardWidth: isMobile ? 250 : 320,
-    pad: isMobile ? 44 : 180,
+    // Fixed card height, capped to the viewport (content scrolls inside).
+    cardHeight: Math.max(220, Math.min(isMobile ? 300 : 360, vh - 140)),
+    padX,
+    padY,
     isMobile,
   };
 }
@@ -192,8 +210,11 @@ export default function OrbitalNav() {
   const [expression, setExpression] = useState<Expression>("flat");
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const sadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const { ringRadius, nodeRadius, memojiSize, cardWidth, pad, isMobile } =
+  const { ringRadius, nodeRadius, memojiSize, cardWidth, cardHeight, padX, padY, isMobile } =
     useViewportSizing();
+  const cardRef = useRef<HTMLDivElement>(null);
+  const cardShiftRef = useRef({ x: 0, y: 0 });
+  const [cardShift, setCardShift] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     if (autoRotate) {
@@ -213,6 +234,39 @@ export default function OrbitalNav() {
       if (sadTimer.current) clearTimeout(sadTimer.current);
     };
   }, []);
+
+  // After a card opens, nudge it so it sits fully inside the viewport. We use a
+  // separate CSS `translate` (composes with motion's `transform`) and measure
+  // off the untransformed size so the open/scale animation doesn't skew it.
+  useEffect(() => {
+    if (isMobile || openId === null) return;
+    const raf = requestAnimationFrame(() => {
+      const el = cardRef.current;
+      if (!el) return;
+      const m = 14;
+      const s = cardShiftRef.current;
+      const w = el.offsetWidth;
+      const h = el.offsetHeight;
+      const r = el.getBoundingClientRect();
+      // Undo the currently-applied shift to get the anchored (base) position.
+      const cx = r.left + r.width / 2 - s.x;
+      const cy = r.top + r.height / 2 - s.y;
+      const left = cx - w / 2;
+      const right = cx + w / 2;
+      const top = cy - h / 2;
+      const bottom = cy + h / 2;
+      let dx = 0;
+      let dy = 0;
+      if (right > window.innerWidth - m) dx = window.innerWidth - m - right;
+      if (left + dx < m) dx = m - left;
+      if (bottom > window.innerHeight - m) dy = window.innerHeight - m - bottom;
+      if (top + dy < m) dy = m - top;
+      const next = { x: dx, y: dy };
+      cardShiftRef.current = next;
+      setCardShift(next);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [openId, isMobile, nodeRadius, cardWidth, cardHeight]);
 
   const getPos = (angleDeg: number) => {
     const angle = (angleDeg + rotationAngle) % 360;
@@ -265,7 +319,7 @@ export default function OrbitalNav() {
   return (
     <div
       className="relative flex items-center justify-center"
-      style={{ width: nodeRadius * 2 + pad, height: nodeRadius * 2 + pad }}
+      style={{ width: nodeRadius * 2 + padX, height: nodeRadius * 2 + padY }}
       onClick={handleBgClick}
     >
       {/* Orbit ring (dashed circle sits inside the nodes) */}
@@ -299,12 +353,15 @@ export default function OrbitalNav() {
       </motion.div>
 
       {/* Orbital nodes */}
-      {navNodes.map((node, i) => {
+      {navNodes.map((node) => {
         const pos = getPos(node.angleDeg);
         const isActive = activeId === node.id;
         const Icon = node.icon;
-        // Open the card above the node when it's in the lower half, else below.
+        // Open the card inward (toward the orbit centre) so it never runs off
+        // screen: above when the node sits low / below when high, and away from
+        // whichever horizontal edge the node is nearer to.
         const cardAbove = pos.y > 0;
+        const openLeft = pos.x > 0;
 
         return (
           <motion.div
@@ -348,25 +405,23 @@ export default function OrbitalNav() {
             <AnimatePresence>
               {!isMobile && openId === node.id && (
                 <motion.div
+                  ref={cardRef}
                   initial={{ opacity: 0, y: cardAbove ? 8 : -8, scale: 0.96 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: cardAbove ? 8 : -8, scale: 0.96 }}
                   transition={{ duration: 0.2 }}
-                  style={{ width: cardWidth }}
-                  className={`absolute left-1/2 -translate-x-1/2 rounded-3xl border border-white/20 bg-black/25 p-6 shadow-2xl shadow-black/40 backdrop-blur-2xl backdrop-saturate-150 ${
-                    cardAbove ? "bottom-16" : "top-16"
-                  }`}
+                  style={{
+                    width: cardWidth,
+                    height: cardHeight,
+                    translate: `${cardShift.x}px ${cardShift.y}px`,
+                  }}
+                  className={`absolute flex flex-col rounded-3xl border border-white/20 bg-black/25 p-6 shadow-2xl shadow-black/40 backdrop-blur-2xl backdrop-saturate-150 ${
+                    openLeft ? "right-1/2" : "left-1/2"
+                  } ${cardAbove ? "bottom-16" : "top-16"}`}
                   onClick={(e) => e.stopPropagation()}
                 >
-                  {/* Connector line */}
-                  <div
-                    className={`absolute left-1/2 -translate-x-1/2 w-px h-3 bg-white/20 ${
-                      cardAbove ? "-bottom-3" : "-top-3"
-                    }`}
-                  />
-
                   {/* Card header */}
-                  <div className="mb-4 flex items-center justify-between">
+                  <div className="mb-4 flex shrink-0 items-center justify-between">
                     <span className="font-mono text-xs uppercase tracking-widest text-white/40">
                       {node.title}
                     </span>
@@ -383,7 +438,9 @@ export default function OrbitalNav() {
                     </button>
                   </div>
 
-                  {node.preview}
+                  <div className="-mr-2 min-h-0 flex-1 overflow-y-auto pr-2">
+                    {node.preview}
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -405,11 +462,11 @@ export default function OrbitalNav() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.2 }}
-                  style={{ width: cardWidth }}
-                  className="absolute left-1/2 top-1/2 z-[250] -translate-x-1/2 -translate-y-1/2 rounded-3xl border border-white/20 bg-black/40 p-6 shadow-2xl shadow-black/50 backdrop-blur-2xl backdrop-saturate-150"
+                  style={{ width: cardWidth, height: cardHeight }}
+                  className="absolute left-1/2 top-1/2 z-[250] flex -translate-x-1/2 -translate-y-1/2 flex-col rounded-3xl border border-white/20 bg-black/40 p-6 shadow-2xl shadow-black/50 backdrop-blur-2xl backdrop-saturate-150"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <div className="mb-4 flex items-center justify-between">
+                  <div className="mb-4 flex shrink-0 items-center justify-between">
                     <span className="font-mono text-xs uppercase tracking-widest text-white/40">
                       {node.title}
                     </span>
@@ -425,7 +482,9 @@ export default function OrbitalNav() {
                       <X size={14} />
                     </button>
                   </div>
-                  {node.preview}
+                  <div className="-mr-2 min-h-0 flex-1 overflow-y-auto pr-2">
+                    {node.preview}
+                  </div>
                 </motion.div>
               );
             })()}

@@ -10,8 +10,8 @@ const HeroShader = dynamic(() => import("@/components/three/HeroShader"), {
   ssr: false,
 });
 
-// Layout stacks (full-width text) below 1280px and switches to the side-by-side
-// row (narrow text column next to the orbital nav) at >= 1280px ("wide").
+// Layout stacks (full-width text) below 1536px and switches to the side-by-side
+// row (text column next to the orbital nav) at >= 1536px ("wide").
 type Breakpoint = "sm" | "md" | "wide";
 
 function useBreakpoint(): Breakpoint {
@@ -19,13 +19,27 @@ function useBreakpoint(): Breakpoint {
   useEffect(() => {
     const update = () => {
       const w = window.innerWidth;
-      setBp(w < 640 ? "sm" : w < 1280 ? "md" : "wide");
+      setBp(w < 640 ? "sm" : w < 1536 ? "md" : "wide");
     };
     update();
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
   }, []);
   return bp;
+}
+
+// The canvas renderer can't read CSS variables, so resolve the Satoshi family
+// string once on the client and pass it to every particle line.
+function useResolvedFont(): string {
+  const [family, setFamily] = useState("system-ui, sans-serif");
+  useEffect(() => {
+    const v = getComputedStyle(document.documentElement)
+      .getPropertyValue("--font-satoshi")
+      .trim();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time read of a resolved CSS var after mount
+    if (v) setFamily(`${v}, system-ui, sans-serif`);
+  }, []);
+  return family;
 }
 
 const revealStyle = {
@@ -40,6 +54,7 @@ const revealStyle = {
 
 export default function Hero() {
   const bp = useBreakpoint();
+  const fontFamily = useResolvedFont();
   const px = (sm: number, md: number, wide: number) =>
     bp === "sm" ? sm : bp === "md" ? md : wide;
 
@@ -66,25 +81,25 @@ export default function Hero() {
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
       </div>
 
-      <div className="relative z-10 mx-auto flex min-h-[100svh] w-full max-w-7xl flex-col items-center justify-start gap-8 px-6 pb-8 pt-16 xl:flex-row xl:justify-between xl:gap-8 xl:pb-0 xl:pt-0">
+      <div className="relative z-10 mx-auto flex min-h-[100svh] w-full max-w-[1600px] flex-col items-center justify-center gap-8 px-6 py-10 2xl:flex-row 2xl:justify-between 2xl:gap-8 2xl:py-0">
         {/* Greeting — left */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
-          className="flex w-full max-w-xl flex-col items-center gap-1 xl:flex-1 xl:items-start"
+          className="flex w-full max-w-2xl flex-col items-center gap-0 2xl:flex-1 2xl:items-start"
         >
           {/* Kicker */}
           <MagicTextReveal
             text="DATA ENGINEER · JAKARTA, ID"
             color="rgba(225, 220, 201, 0.5)"
-            fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
-            fontSize={px(11, 13, 12)}
+            fontFamily={fontFamily}
+            fontSize={px(11, 13, 16)}
             fontWeight={500}
-            spread={10}
+            spread={8}
             speed={0.5}
             density={5}
-            padding={12}
+            padding={8}
             autoReveal
             revealStart={revealReady}
             style={revealStyle}
@@ -93,12 +108,13 @@ export default function Hero() {
           <MagicTextReveal
             text="Hello! I'm"
             color="rgba(225, 220, 201, 1)"
-            fontSize={px(28, 44, 30)}
+            fontFamily={fontFamily}
+            fontSize={px(16, 22, 30)}
             fontWeight={600}
-            spread={12}
+            spread={8}
             speed={0.5}
             density={5}
-            padding={14}
+            padding={8}
             autoReveal
             revealStart={revealReady}
             style={revealStyle}
@@ -107,12 +123,13 @@ export default function Hero() {
           <MagicTextReveal
             text="Luthfi Nabhan Ibrahim"
             color="rgba(225, 220, 201, 1)"
-            fontSize={px(30, 46, 28)}
-            fontWeight={600}
-            spread={14}
+            fontFamily={fontFamily}
+            fontSize={px(30, 46, 44)}
+            fontWeight={800}
+            spread={12}
             speed={0.5}
             density={5}
-            padding={14}
+            padding={10}
             autoReveal
             revealStart={revealReady}
             style={revealStyle}
@@ -121,12 +138,13 @@ export default function Hero() {
           <MagicTextReveal
             text="Feel free to dig my portfolio!"
             color="rgba(225, 220, 201, 0.6)"
-            fontSize={px(15, 18, 15)}
+            fontFamily={fontFamily}
+            fontSize={px(15, 18, 22)}
             fontWeight={400}
-            spread={10}
+            spread={8}
             speed={0.5}
             density={5}
-            padding={12}
+            padding={8}
             autoReveal
             revealStart={revealReady}
             style={revealStyle}
