@@ -19,7 +19,7 @@ export default function Hero() {
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
       </div>
 
-      <div className="relative z-10 mx-auto flex min-h-[100svh] w-full max-w-7xl flex-col items-center justify-center gap-4 px-6 py-8 md:flex-row md:justify-between md:gap-8 md:py-0">
+      <div className="relative z-10 mx-auto flex min-h-[100svh] w-full max-w-7xl flex-col items-center justify-start gap-8 px-6 pb-8 pt-16 md:flex-row md:justify-between md:gap-8 md:pb-0 md:pt-0">
         {/* Greeting — left */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
