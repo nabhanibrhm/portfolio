@@ -1,0 +1,144 @@
+---
+import "../styles/global.css";
+import { ClientRouter } from "astro:transitions";
+import Header from "../components/Header.astro";
+import Preloader from "../components/Preloader.astro";
+import { site } from "../data/site";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = `${site.name} — ${site.role}`,
+  description = `Portfolio of ${site.name} — ${site.role} building data platforms, streaming pipelines, and interactive experiences.`,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#181818" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+
+    <!-- SPA-like routing + the hook GSAP rides on for page transitions -->
+    <ClientRouter />
+
+    <!-- If JS is unavailable, never leave reveal content hidden -->
+    <noscript>
+      <style>
+        [data-reveal] { opacity: 1 !important; }
+        [data-mask] > * { transform: none !important; }
+        #preloader { display: none !important; }
+      </style>
+    </noscript>
+  </head>
+
+  <body>
+    <Preloader transition:persist="preloader" />
+    <Header transition:persist="header" />
+
+    <!-- Everything inside #swap-root is what GSAP fades/slides between routes -->
+    <main id="swap-root" data-swap-root>
+      <slot />
+    </main>
+
+    <script>
+      import { gsap, ScrollTrigger } from "../lib/gsap";
+      import Lenis from "lenis";
+
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const root = () => document.getElementById("swap-root");
+
+      // --- Smooth scroll (Lenis), driven by the GSAP ticker and wired to
+      //     ScrollTrigger. Initialised once; the document survives VT navs. ---
+      if (!reduce && !(window as any).__lenis) {
+        const lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
+        lenis.on("scroll", ScrollTrigger.update);
+        gsap.ticker.add((t) => lenis.raf(t * 1000));
+        gsap.ticker.lagSmoothing(0);
+        (window as any).__lenis = lenis;
+      }
+
+      // --- Scroll-driven parallax on any [data-parallax] element. Tagged with
+      //     an id so we can clear just these before each navigation. ---
+      function initParallax() {
+        if (reduce) return;
+        gsap.utils.toArray<HTMLElement>("[data-parallax]").forEach((el) => {
+          const speed = parseFloat(el.dataset.parallax || "0");
+          gsap.to(el, {
+            yPercent: speed * 100,
+            ease: "none",
+            scrollTrigger: {
+              id: "px",
+              trigger: el,
+              start: "top bottom",
+              end: "bottom top",
+              scrub: true,
+            },
+          });
+        });
+      }
+
+      // --- Page intro: fade + slide the new route in ---
+      function playIntro() {
+        const el = root();
+        if (!el) return;
+        if (reduce) {
+          gsap.set(el, { clearProps: "all", autoAlpha: 1 });
+          return;
+        }
+        gsap.fromTo(
+          el,
+          { autoAlpha: 0, y: 24 },
+          { autoAlpha: 1, y: 0, duration: 0.7, ease: "power3.out", clearProps: "transform" },
+        );
+      }
+
+      // Fires on first load AND after every View Transition navigation.
+      document.addEventListener("astro:page-load", () => {
+        initParallax();
+        ScrollTrigger.refresh();
+        playIntro();
+      });
+
+      // Page exit: intercept the loader so the current route animates out first.
+      document.addEventListener("astro:before-preparation", (event: any) => {
+        if (reduce) return;
+        const el = root();
+        if (!el) return;
+        const original = event.loader;
+        event.loader = async () => {
+          await gsap.to(el, { autoAlpha: 0, y: -16, duration: 0.35, ease: "power2.in" });
+          await original();
+        };
+      });
+
+      // Tear down Astro-side triggers (parallax + Astro-section reveals) before
+      // the DOM is swapped. Vue islands clean up their own via onBeforeUnmount.
+      document.addEventListener("astro:before-swap", () => {
+        ScrollTrigger.getAll().forEach((t) => {
+          if (t.vars.id === "px" || t.vars.id === "reveal") t.kill();
+        });
+      });
+
+      // Hide the freshly-swapped content for a frame so the intro has something
+      // to reveal, and reset scroll position to the top.
+      document.addEventListener("astro:after-swap", () => {
+        const el = root();
+        if (el && !reduce) gsap.set(el, { autoAlpha: 0 });
+        (window as any).__lenis?.scrollTo(0, { immediate: true });
+        window.scrollTo(0, 0);
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,187 @@
+---
+import { navLinks, site } from "../data/site";
+---
+
+<header
+  id="site-header"
+  class="fixed inset-x-0 top-0 z-50 border-b border-transparent transition-[background-color,backdrop-filter,border-color] duration-500 ease-smooth"
+>
+  <div class="shell flex h-[var(--header-h)] items-center justify-between">
+    <!-- Wordmark -->
+    <a href="/" data-nav class="flex items-center gap-2.5 text-sm font-semibold tracking-tight">
+      <span class="inline-flex h-7 w-7 items-center justify-center rounded-md bg-accent text-[11px] font-bold text-background">
+        LN
+      </span>
+      <span class="hidden sm:inline">Luthfi <span class="text-accent">Nabhan</span></span>
+    </a>
+
+    <!-- Desktop nav -->
+    <nav class="hidden items-center gap-8 md:flex">
+      {
+        navLinks.map((l) => (
+          <a
+            href={l.href}
+            data-nav
+            data-spy={l.href}
+            class="text-sm text-foreground-muted transition-colors duration-300 hover:text-foreground"
+          >
+            {l.label}
+          </a>
+        ))
+      }
+      <a
+        href={`mailto:${site.email}`}
+        class="rounded-full bg-foreground px-5 py-2 text-sm font-medium text-background transition-colors duration-300 hover:bg-accent hover:text-foreground"
+      >
+        Let&rsquo;s talk
+      </a>
+    </nav>
+
+    <!-- Mobile toggle -->
+    <button
+      id="menu-toggle"
+      type="button"
+      aria-label="Open menu"
+      aria-expanded="false"
+      class="relative z-50 flex h-10 w-10 items-center justify-center md:hidden"
+    >
+      <span class="menu-bar"></span>
+      <span class="menu-bar"></span>
+    </button>
+  </div>
+
+  <!-- Mobile overlay -->
+  <div
+    id="mobile-menu"
+    class="fixed inset-0 z-40 -translate-y-full bg-background-soft transition-transform duration-500 ease-smooth-inout md:hidden"
+    aria-hidden="true"
+  >
+    <nav class="flex h-full flex-col justify-center gap-1 px-8">
+      {
+        navLinks.map((l, i) => (
+          <a
+            href={l.href}
+            data-nav
+            data-mobile-link
+            class="flex items-center gap-4 border-b border-foreground/10 py-5 text-3xl font-medium tracking-tight"
+          >
+            <span class="font-mono text-base text-foreground-faint">0{i + 1}</span>
+            {l.label}
+          </a>
+        ))
+      }
+      <a href={`mailto:${site.email}`} data-mobile-link class="mt-8 text-lg text-accent">
+        {site.email}
+      </a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  #site-header.is-scrolled {
+    @apply border-foreground/10 bg-background/70 backdrop-blur-xl;
+  }
+  .menu-bar {
+    @apply absolute h-px w-6 bg-foreground transition-all duration-300 ease-smooth;
+  }
+  .menu-bar:first-child {
+    transform: translateY(-4px);
+  }
+  .menu-bar:last-child {
+    transform: translateY(4px);
+  }
+  #menu-toggle[aria-expanded="true"] .menu-bar:first-child {
+    transform: translateY(0) rotate(45deg);
+  }
+  #menu-toggle[aria-expanded="true"] .menu-bar:last-child {
+    transform: translateY(0) rotate(-45deg);
+  }
+  #mobile-menu.is-open {
+    transform: translateY(0);
+  }
+</style>
+
+<script>
+  const header = () => document.getElementById("site-header");
+  const toggle = () => document.getElementById("menu-toggle");
+  const menu = () => document.getElementById("mobile-menu");
+
+  function setMenu(open: boolean) {
+    const t = toggle();
+    const m = menu();
+    if (!t || !m) return;
+    t.setAttribute("aria-expanded", String(open));
+    t.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+    m.classList.toggle("is-open", open);
+    m.setAttribute("aria-hidden", String(!open));
+    document.documentElement.classList.toggle("is-loading", open); // reuse scroll-lock
+  }
+
+  // Delegated nav clicks: smooth in-page scroll with fixed-header offset,
+  // and close the mobile menu on any selection.
+  document.addEventListener("click", (e) => {
+    const a = (e.target as HTMLElement).closest?.("a[data-nav]") as HTMLAnchorElement | null;
+    if (!a) return;
+    if (a.closest("#mobile-menu")) setMenu(false);
+
+    const href = a.getAttribute("href") || "";
+    if (!href.includes("#")) return;
+    const id = href.slice(href.indexOf("#"));
+    if (id.length < 2) return;
+
+    const onIndex = location.pathname === "/";
+    const target = document.querySelector(id);
+    if (onIndex && target) {
+      e.preventDefault();
+      const off = header()?.offsetHeight ?? 72;
+      const lenis = (window as any).__lenis;
+      if (lenis) lenis.scrollTo(target, { offset: -off });
+      else (target as HTMLElement).scrollIntoView({ behavior: "smooth" });
+      history.replaceState(null, "", id);
+    }
+  });
+
+  // Mobile menu toggle
+  document.addEventListener("click", (e) => {
+    if (!(e.target as HTMLElement).closest?.("#menu-toggle")) return;
+    setMenu(toggle()?.getAttribute("aria-expanded") !== "true");
+  });
+
+  // Condense header background once scrolled
+  const onScroll = () =>
+    header()?.classList.toggle("is-scrolled", window.scrollY > 24);
+  window.addEventListener("scroll", onScroll, { passive: true });
+
+  // Scrollspy — mark the link for the section currently in view
+  let spy: IntersectionObserver | null = null;
+  function initSpy() {
+    spy?.disconnect();
+    const links = Array.from(
+      document.querySelectorAll<HTMLAnchorElement>("[data-spy]"),
+    );
+    if (!links.length) return;
+    const map = new Map<Element, HTMLAnchorElement>();
+    links.forEach((l) => {
+      const id = (l.dataset.spy || "").split("#")[1];
+      const sec = id ? document.getElementById(id) : null;
+      if (sec) map.set(sec, l);
+    });
+    spy = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((en) => {
+          if (!en.isIntersecting) return;
+          links.forEach((l) => l.classList.remove("text-foreground"));
+          map.get(en.target)?.classList.add("text-foreground");
+        });
+      },
+      { rootMargin: "-45% 0px -50% 0px" },
+    );
+    map.forEach((_, sec) => spy!.observe(sec));
+  }
+
+  document.addEventListener("astro:page-load", () => {
+    onScroll();
+    initSpy();
+    setMenu(false);
+  });
+</script>

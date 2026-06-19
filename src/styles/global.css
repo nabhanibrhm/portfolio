@@ -1,0 +1,119 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ----------------------------------------------------------------------------
+ * Satoshi — self-hosted variable font (300–900), carried over from the old build
+ * -------------------------------------------------------------------------- */
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/Satoshi-Variable.woff2") format("woff2");
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  :root {
+    --header-h: 4.5rem; /* fixed-header height → drives anchor scroll offset */
+    --accent: #ff5722;
+    --secondary: #673ab7;
+  }
+
+  html {
+    scroll-behavior: smooth; /* native fallback when Lenis is disabled */
+    scroll-padding-top: var(--header-h); /* offset #anchors under the fixed header */
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+    overflow-x: hidden;
+  }
+
+  /* Lock scroll while the preloader is up */
+  html.is-loading,
+  html.is-loading body {
+    overflow: hidden;
+    height: 100%;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--accent) 70%, transparent);
+    color: #fff;
+  }
+
+  /* Lenis smooth-scroll hooks */
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+  .lenis.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+  }
+  .lenis.lenis-stopped {
+    overflow: hidden;
+  }
+}
+
+@layer components {
+  .shell {
+    @apply mx-auto w-full max-w-shell px-6 md:px-10;
+  }
+  .eyebrow {
+    @apply font-mono text-xs uppercase tracking-kicker text-foreground-faint;
+  }
+  /* Animated underline used on inline links */
+  .link-underline {
+    @apply relative inline-block;
+  }
+  .link-underline::after {
+    content: "";
+    @apply absolute -bottom-0.5 left-0 h-px w-full origin-right scale-x-0 bg-accent transition-transform duration-500 ease-smooth;
+  }
+  .link-underline:hover::after {
+    @apply origin-left scale-x-100;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .anchor-offset {
+    scroll-margin-top: var(--header-h);
+  }
+}
+
+/* ----------------------------------------------------------------------------
+ * Scroll-reveal initial states.
+ * Only applied when motion is allowed; GSAP animates these to their resting
+ * state. A <noscript> rule in Layout.astro reveals everything if JS is off.
+ * -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal] {
+    opacity: 0;
+  }
+  /* "Unmask" wrappers: child slides up from behind a clipped edge */
+  [data-mask] {
+    overflow: hidden;
+  }
+  [data-mask] > * {
+    transform: translateY(110%);
+    will-change: transform;
+  }
+}
+
+/* ----------------------------------------------------------------------------
+ * View Transitions: page motion is driven by GSAP (see Layout.astro), so we
+ * disable the built-in cross-document root animation to avoid a double effect.
+ * -------------------------------------------------------------------------- */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}

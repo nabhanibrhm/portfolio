@@ -1,0 +1,18 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Hero from "../components/Hero.astro";
+import About from "../components/About.vue";
+import Experiences from "../components/Experiences.vue";
+import Projects from "../components/Projects.vue";
+import Contact from "../components/Contact.astro";
+---
+
+<Layout>
+  <Hero />
+  <!-- Vue islands hydrate just before entering the viewport; each owns its
+       own ScrollTrigger reveal + hover interactions. -->
+  <About client:visible={{ rootMargin: "300px" }} />
+  <Experiences client:visible={{ rootMargin: "300px" }} />
+  <Projects client:visible={{ rootMargin: "300px" }} />
+  <Contact />
+</Layout>

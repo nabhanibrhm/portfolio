@@ -1,0 +1,120 @@
+---
+import { site } from "../data/site";
+---
+
+<div id="preloader" aria-hidden="true">
+  <div class="pl-fade">
+    <img src="/memoji.png" alt="" width="120" height="180" class="pl-memoji" />
+    <p class="pl-name">{site.name}</p>
+  </div>
+  <div class="pl-count pl-fade"><span id="pl-num">00</span><span class="pl-pct">%</span></div>
+  <div class="pl-bar"><span id="pl-bar"></span></div>
+</div>
+
+<style>
+  #preloader {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2.5rem;
+    background: #181818;
+  }
+  #preloader.is-hidden {
+    display: none;
+  }
+  .pl-fade {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+  .pl-memoji {
+    height: 7.5rem;
+    width: auto;
+  }
+  .pl-name {
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #6b6b6b;
+  }
+  .pl-count {
+    font-size: clamp(3rem, 12vw, 6rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+    color: #f7f7f7;
+  }
+  .pl-pct {
+    color: #ff5722;
+  }
+  .pl-bar {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 2px;
+    width: 100%;
+    background: rgba(247, 247, 247, 0.08);
+  }
+  .pl-bar > span {
+    display: block;
+    height: 100%;
+    width: 0%;
+    background: #ff5722;
+  }
+</style>
+
+<script>
+  import { gsap } from "../lib/gsap";
+
+  // Signal the Hero (and anything else) that the first paint is ready.
+  function finish() {
+    (window as any).__preloaded = true;
+    window.dispatchEvent(new Event("preloader:done"));
+  }
+
+  const el = document.getElementById("preloader");
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const seen = sessionStorage.getItem("pl-seen") === "1";
+
+  if (!el || reduce || seen) {
+    el?.classList.add("is-hidden");
+    document.documentElement.classList.remove("is-loading");
+    finish();
+  } else {
+    {
+      sessionStorage.setItem("pl-seen", "1");
+      document.documentElement.classList.add("is-loading");
+
+      const num = document.getElementById("pl-num");
+      const bar = document.getElementById("pl-bar");
+      const state = { v: 0 };
+
+      const tl = gsap.timeline({
+        onComplete: () => {
+          document.documentElement.classList.remove("is-loading");
+          el.classList.add("is-hidden");
+          finish();
+        },
+      });
+
+      tl.to(state, {
+        v: 100,
+        duration: 1.4,
+        ease: "power2.inOut",
+        onUpdate: () => {
+          const v = Math.round(state.v);
+          if (num) num.textContent = String(v).padStart(2, "0");
+          if (bar) (bar as HTMLElement).style.width = v + "%";
+        },
+      });
+      tl.to(".pl-fade", { autoAlpha: 0, y: -10, duration: 0.4, ease: "power2.out" }, "+=0.15");
+      tl.to(el, { autoAlpha: 0, duration: 0.6, ease: "power2.inOut" }, "<0.1");
+    }
+  }
+</script>
