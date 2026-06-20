@@ -12,7 +12,7 @@ const year = new Date().getFullYear();
     <div
       data-parallax="0.2"
       class="absolute left-1/2 top-1/3 h-[40vw] max-h-[520px] w-[40vw] max-w-[520px] -translate-x-1/2 rounded-full opacity-40 blur-[90px]"
-      style="background: radial-gradient(circle at center, #673ab7, transparent 68%);"
+      style="background: radial-gradient(circle at center, #a81f45, transparent 68%);"
     >
     </div>
   </div>
@@ -110,6 +110,9 @@ const year = new Date().getFullYear();
         duration: 0.9,
         ease: "power3.out",
         stagger: 0.1,
+        // Drop the residual inline transform so finished reveals don't keep
+        // their own GPU layer (a mobile repaint/ghosting source).
+        clearProps: "transform",
         scrollTrigger: { id: "reveal", trigger: el, start: "top 70%" },
       },
     );

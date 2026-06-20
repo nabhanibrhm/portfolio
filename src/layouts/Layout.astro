@@ -25,7 +25,7 @@ const {
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#181818" />
+    <meta name="theme-color" content="#000000" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
@@ -57,6 +57,13 @@ const {
       import Lenis from "lenis";
 
       const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      // Parallax is desktop-only: scroll-driven transforms on blurred/large
+      // layers smear & "carry" sibling content on mobile GPUs, and add little
+      // value on a narrow screen. Touch or <=768px → no parallax.
+      const noParallax =
+        reduce ||
+        window.matchMedia("(pointer: coarse)").matches ||
+        window.matchMedia("(max-width: 768px)").matches;
       const root = () => document.getElementById("swap-root");
 
       // --- Smooth scroll (Lenis), driven by the GSAP ticker and wired to
@@ -72,7 +79,7 @@ const {
       // --- Scroll-driven parallax on any [data-parallax] element. Tagged with
       //     an id so we can clear just these before each navigation. ---
       function initParallax() {
-        if (reduce) return;
+        if (noParallax) return;
         gsap.utils.toArray<HTMLElement>("[data-parallax]").forEach((el) => {
           const speed = parseFloat(el.dataset.parallax || "0");
           gsap.to(el, {

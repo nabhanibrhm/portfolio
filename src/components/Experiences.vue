@@ -60,7 +60,7 @@ const current = computed(() =>
 
 <style scoped>
 .index-list {
-  border-top: 1px solid rgba(247, 247, 247, 0.1);
+  border-top: 1px solid rgba(238, 238, 238, 0.1);
 }
 .index-row {
   display: flex;
@@ -68,7 +68,7 @@ const current = computed(() =>
   align-items: baseline;
   gap: 0.5rem 1.5rem;
   padding: 1.75rem 0;
-  border-bottom: 1px solid rgba(247, 247, 247, 0.1);
+  border-bottom: 1px solid rgba(238, 238, 238, 0.1);
   cursor: default;
   transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -81,7 +81,7 @@ const current = computed(() =>
   width: 2rem;
   font-family: "Satoshi", ui-monospace, monospace;
   font-size: 0.8rem;
-  color: #6b6b6b;
+  color: #888888;
 }
 .idx-title {
   font-size: clamp(1.5rem, 3.2vw, 2.5rem);
@@ -90,16 +90,16 @@ const current = computed(() =>
   transition: color 0.4s ease;
 }
 .index-row:hover .idx-title {
-  color: #ff5722;
+  color: #cb2957;
 }
 .idx-sub {
-  color: #a3a3a3;
+  color: #dddddd;
   margin-left: auto;
 }
 .idx-meta {
   font-family: "Satoshi", ui-monospace, monospace;
   font-size: 0.8rem;
-  color: #6b6b6b;
+  color: #888888;
   min-width: 8.5rem;
   text-align: right;
 }
@@ -148,26 +148,26 @@ const current = computed(() =>
   gap: 0.5rem;
   padding: 1.5rem;
   border-radius: 1.25rem;
-  color: #f7f7f7;
-  border: 1px solid rgba(247, 247, 247, 0.12);
+  color: #eeeeee;
+  border: 1px solid rgba(238, 238, 238, 0.12);
   box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.6);
 }
 .thumb-card.is-accent {
   background:
-    radial-gradient(120% 120% at 0% 0%, rgba(255, 87, 34, 0.55), transparent 60%),
-    #1f1f1f;
+    radial-gradient(120% 120% at 0% 0%, rgba(203, 41, 87, 0.55), transparent 60%),
+    #0d0d0d;
 }
 .thumb-card.is-secondary {
   background:
-    radial-gradient(120% 120% at 0% 0%, rgba(103, 58, 183, 0.55), transparent 60%),
-    #1f1f1f;
+    radial-gradient(120% 120% at 0% 0%, rgba(168, 31, 69, 0.55), transparent 60%),
+    #0d0d0d;
 }
 .thumb-kicker {
   font-family: "Satoshi", ui-monospace, monospace;
   font-size: 0.7rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgba(247, 247, 247, 0.7);
+  color: rgba(238, 238, 238, 0.7);
 }
 .thumb-title {
   font-size: 1.5rem;
@@ -177,7 +177,7 @@ const current = computed(() =>
 .thumb-desc {
   font-size: 0.85rem;
   line-height: 1.5;
-  color: rgba(247, 247, 247, 0.75);
+  color: rgba(238, 238, 238, 0.75);
 }
 @media (hover: none) {
   .hover-thumb {

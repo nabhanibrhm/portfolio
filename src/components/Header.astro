@@ -78,8 +78,16 @@ import { navLinks, site } from "../data/site";
 </header>
 
 <style>
+  /* Mobile: a near-opaque solid bar. backdrop-filter on a fixed element
+     freezes its last sample on many mobile GPUs, "carrying"/ghosting the
+     content that scrolled under it — so no blur on small screens. */
   #site-header.is-scrolled {
-    @apply border-foreground/10 bg-background/70 backdrop-blur-xl;
+    @apply border-foreground/10 bg-background/95;
+  }
+  @media (min-width: 768px) {
+    #site-header.is-scrolled {
+      @apply bg-background/70 backdrop-blur-xl;
+    }
   }
   .menu-bar {
     @apply absolute h-px w-6 bg-foreground transition-all duration-300 ease-smooth;

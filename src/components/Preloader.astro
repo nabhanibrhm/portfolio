@@ -21,7 +21,7 @@ import { site } from "../data/site";
     align-items: center;
     justify-content: center;
     gap: 2.5rem;
-    background: #181818;
+    background: #000000;
   }
   #preloader.is-hidden {
     display: none;
@@ -32,15 +32,24 @@ import { site } from "../data/site";
     align-items: center;
     gap: 1rem;
   }
+  /* Pull the name tight under the memoji (count group keeps its own gap) */
+  .pl-fade:has(.pl-memoji) {
+    gap: 0.25rem;
+  }
   .pl-memoji {
-    height: 7.5rem;
+    /* The PNG has a tall transparent lower region; crop to the face so the
+       name sits tight under the chin instead of below empty space. */
+    height: clamp(11rem, 36vw, 19rem);
+    aspect-ratio: 1 / 1;
     width: auto;
+    object-fit: cover;
+    object-position: center top;
   }
   .pl-name {
     font-size: 0.75rem;
     letter-spacing: 0.3em;
     text-transform: uppercase;
-    color: #6b6b6b;
+    color: #888888;
   }
   .pl-count {
     font-size: clamp(3rem, 12vw, 6rem);
@@ -48,10 +57,10 @@ import { site } from "../data/site";
     line-height: 1;
     letter-spacing: -0.04em;
     font-variant-numeric: tabular-nums;
-    color: #f7f7f7;
+    color: #eeeeee;
   }
   .pl-pct {
-    color: #ff5722;
+    color: #cb2957;
   }
   .pl-bar {
     position: absolute;
@@ -59,13 +68,13 @@ import { site } from "../data/site";
     bottom: 0;
     height: 2px;
     width: 100%;
-    background: rgba(247, 247, 247, 0.08);
+    background: rgba(238, 238, 238, 0.08);
   }
   .pl-bar > span {
     display: block;
     height: 100%;
     width: 0%;
-    background: #ff5722;
+    background: #cb2957;
   }
 </style>
 
@@ -80,7 +89,7 @@ import { site } from "../data/site";
 
   const el = document.getElementById("preloader");
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const seen = sessionStorage.getItem("pl-seen") === "1";
+  const seen = false; // always show the loader (was: sessionStorage "pl-seen" gate)
 
   if (!el || reduce || seen) {
     el?.classList.add("is-hidden");
@@ -105,7 +114,7 @@ import { site } from "../data/site";
 
       tl.to(state, {
         v: 100,
-        duration: 1.4,
+        duration: 3,
         ease: "power2.inOut",
         onUpdate: () => {
           const v = Math.round(state.v);
@@ -113,8 +122,8 @@ import { site } from "../data/site";
           if (bar) (bar as HTMLElement).style.width = v + "%";
         },
       });
-      tl.to(".pl-fade", { autoAlpha: 0, y: -10, duration: 0.4, ease: "power2.out" }, "+=0.15");
-      tl.to(el, { autoAlpha: 0, duration: 0.6, ease: "power2.inOut" }, "<0.1");
+      tl.to(".pl-fade", { autoAlpha: 0, y: -10, duration: 2, ease: "power2.out" }, "+=0.15");
+      tl.to(el, { autoAlpha: 0, duration: 0.6, ease: "power2.inOut" }, ">-0.2");
     }
   }
 </script>

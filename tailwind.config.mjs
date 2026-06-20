@@ -9,29 +9,30 @@ export default {
        * never raw hex. Overrides the old cream/black theme.
        * ------------------------------------------------------------------- */
       colors: {
-        // #181818 — dark theme base
+        // #000000 — pure-black theme base (soft/elevated derived for surfaces)
         background: {
-          DEFAULT: "#181818",
-          soft: "#1f1f1f", // raised surfaces / cards
-          elevated: "#262626", // hover surfaces
+          DEFAULT: "#000000",
+          soft: "#0d0d0d", // raised surfaces / cards
+          elevated: "#161616", // hover surfaces
         },
-        // #F7F7F7 — high-contrast off-white
+        // #EEEEEE — high-contrast off-white
         foreground: {
-          DEFAULT: "#F7F7F7",
-          muted: "#a3a3a3", // secondary copy
-          faint: "#6b6b6b", // tertiary / metadata
+          DEFAULT: "#EEEEEE",
+          muted: "#DDDDDD", // secondary copy
+          faint: "#888888", // tertiary / metadata (derived)
         },
-        // #FF5722 — PRIMARY accent (orange): highlight "Nabhan" + primary CTAs
+        // #CB2957 — PRIMARY accent (crimson): highlight "Nabhan" + primary CTAs
         accent: {
-          DEFAULT: "#FF5722",
-          soft: "#ff7a52",
-          deep: "#e64a19",
+          DEFAULT: "#CB2957",
+          soft: "#e0476f", // lighter (derived)
+          deep: "#a81f45", // darker (derived)
         },
-        // #673AB7 — SECONDARY accent (purple): hover states + visual depth
+        // SECONDARY (deep-crimson): hover states + visual depth — mono palette,
+        // derived from the accent so no second hue is introduced.
         secondary: {
-          DEFAULT: "#673AB7",
-          soft: "#8159d1",
-          deep: "#512da8",
+          DEFAULT: "#a81f45",
+          soft: "#cb2957",
+          deep: "#7d1733",
         },
       },
       fontFamily: {

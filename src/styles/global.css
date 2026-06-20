@@ -16,8 +16,8 @@
 @layer base {
   :root {
     --header-h: 4.5rem; /* fixed-header height → drives anchor scroll offset */
-    --accent: #ff5722;
-    --secondary: #673ab7;
+    --accent: #cb2957;
+    --secondary: #a81f45;
   }
 
   html {

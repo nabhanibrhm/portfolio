@@ -56,6 +56,9 @@ export function useReveal(rootEl: Ref<HTMLElement | null>) {
             duration: 0.9,
             ease: "power3.out",
             stagger: 0.07,
+            // Drop residual inline transform so finished reveals don't keep a
+            // GPU layer (mobile repaint/ghosting source).
+            clearProps: "transform",
             scrollTrigger: { trigger: el, start: "top 72%" },
           },
         );
