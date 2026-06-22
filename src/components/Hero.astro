@@ -4,12 +4,10 @@ import { site } from "../data/site";
 
 <section
   id="hero"
-  class="relative isolate flex min-h-[100svh] flex-col justify-center overflow-hidden py-[calc(var(--header-h)+1.5rem)]"
+  class="relative isolate flex min-h-[82svh] flex-col justify-center overflow-hidden pb-16 pt-[calc(var(--header-h)+1rem)]"
 >
-  <!-- Parallax background (WebGL-lite: blurred gradient orbs + grid) -->
+  <!-- Background: masked grid + bottom fade -->
   <div class="pointer-events-none absolute inset-0 -z-10">
-    <div data-orb data-parallax="0.25" class="orb orb--accent"></div>
-    <div data-orb data-parallax="-0.18" class="orb orb--secondary"></div>
     <div class="absolute inset-0 hero-grid"></div>
     <div class="absolute inset-0 bg-gradient-to-b from-background/10 via-background/30 to-background"></div>
   </div>
@@ -70,32 +68,6 @@ import { site } from "../data/site";
     font-size: clamp(3rem, 13vw, 11rem);
     line-height: 0.92;
   }
-  .orb {
-    position: absolute;
-    border-radius: 9999px;
-    filter: blur(80px);
-    opacity: 0.55;
-    will-change: transform;
-  }
-  .orb--accent {
-    top: -8%;
-    right: -5%;
-    height: 42vw;
-    width: 42vw;
-    max-height: 620px;
-    max-width: 620px;
-    background: radial-gradient(circle at center, #cb2957, transparent 68%);
-  }
-  .orb--secondary {
-    bottom: -12%;
-    left: -8%;
-    height: 38vw;
-    width: 38vw;
-    max-height: 560px;
-    max-width: 560px;
-    background: radial-gradient(circle at center, #a81f45, transparent 68%);
-    opacity: 0.5;
-  }
   .hero-grid {
     background-image:
       linear-gradient(to right, rgba(238, 238, 238, 0.04) 1px, transparent 1px),
@@ -103,6 +75,11 @@ import { site } from "../data/site";
     background-size: 64px 64px;
     mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 30%, transparent 75%);
     -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 30%, transparent 75%);
+    /* Rasterize the masked grid into its own GPU layer once. Without this the
+       mask is recomposited every scroll frame — the source of the hero-only
+       jank. On a static layer the compositor just translates the cached texture. */
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
   .scroll-line {
     position: relative;
@@ -155,21 +132,6 @@ import { site } from "../data/site";
       { autoAlpha: 0, y: 18 },
       { autoAlpha: 1, y: 0, duration: 0.8, ease: "power3.out", stagger: 0.1 },
       "-=0.55",
-    );
-
-    // Subtle mouse parallax on the orbs (depth without WebGL)
-    const orbs = gsap.utils.toArray<HTMLElement>("[data-orb]");
-    window.addEventListener(
-      "pointermove",
-      (e) => {
-        const cx = e.clientX / window.innerWidth - 0.5;
-        const cy = e.clientY / window.innerHeight - 0.5;
-        orbs.forEach((o, i) => {
-          const depth = (i + 1) * 24;
-          gsap.to(o, { x: cx * depth, y: cy * depth, duration: 1, ease: "power3.out" });
-        });
-      },
-      { passive: true },
     );
   }
 

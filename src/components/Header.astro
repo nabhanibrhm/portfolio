@@ -4,7 +4,7 @@ import { navLinks, site } from "../data/site";
 
 <header
   id="site-header"
-  class="fixed inset-x-0 top-0 z-50 border-b border-transparent transition-[background-color,backdrop-filter,border-color] duration-500 ease-smooth"
+  class="fixed inset-x-0 top-0 z-50 border-b border-transparent transition-[background-color,border-color] duration-500 ease-smooth"
 >
   <div class="shell flex h-[var(--header-h)] items-center justify-between">
     <!-- Wordmark -->
@@ -78,16 +78,12 @@ import { navLinks, site } from "../data/site";
 </header>
 
 <style>
-  /* Mobile: a near-opaque solid bar. backdrop-filter on a fixed element
-     freezes its last sample on many mobile GPUs, "carrying"/ghosting the
-     content that scrolled under it — so no blur on small screens. */
+  /* A near-opaque solid bar — no backdrop-filter. blur() on a fixed element is
+     a heavy per-scroll-frame cost in Firefox (and ghosts on mobile GPUs), and
+     it has to re-blur the busy hero (grid + giant title) on every frame, which
+     was the source of the hero-only scroll jank. A solid bar costs nothing. */
   #site-header.is-scrolled {
     @apply border-foreground/10 bg-background/95;
-  }
-  @media (min-width: 768px) {
-    #site-header.is-scrolled {
-      @apply bg-background/70 backdrop-blur-xl;
-    }
   }
   .menu-bar {
     @apply absolute h-px w-6 bg-foreground transition-all duration-300 ease-smooth;

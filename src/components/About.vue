@@ -44,7 +44,7 @@ useReveal(rootEl);
             data-reveal
           >
             <img
-              src="/memoji-smile.png"
+              src="/memoji-smile.webp"
               alt="Luthfi Nabhan Ibrahim"
               width="600"
               height="800"
