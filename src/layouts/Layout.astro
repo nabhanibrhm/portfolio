@@ -30,6 +30,23 @@ const {
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
 
+    <!-- Theme: apply the saved choice before first paint (no flash), and
+         re-apply after every View Transition since the swapped-in <html> is
+         server-rendered without the class. Defaults to dark. -->
+    <script is:inline>
+      (() => {
+        const apply = () => {
+          let t;
+          try {
+            t = localStorage.getItem("theme");
+          } catch (e) {}
+          document.documentElement.classList.toggle("light", t === "light");
+        };
+        apply();
+        document.addEventListener("astro:after-swap", apply);
+      })();
+    </script>
+
     <!-- SPA-like routing + the hook GSAP rides on for page transitions -->
     <ClientRouter />
 

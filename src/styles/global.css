@@ -18,6 +18,26 @@
     --header-h: 6rem; /* fixed-header height → drives anchor scroll offset */
     --accent: #cb2957;
     --secondary: #a81f45;
+
+    /* Neutral palette as space-separated RGB triples (consumed by Tailwind's
+       rgb(var() / <alpha-value>) tokens and by scoped styles). Default = dark. */
+    --bg: 0 0 0;
+    --bg-soft: 13 13 13;
+    --bg-elevated: 22 22 22;
+    --fg: 238 238 238;
+    --fg-muted: 221 221 221;
+    --fg-faint: 136 136 136;
+  }
+
+  /* Light theme — toggled by adding `.light` to <html> (see Header + the
+     no-flash init script in Layout.astro). Accent stays the same crimson. */
+  html.light {
+    --bg: 247 247 245;
+    --bg-soft: 255 255 255;
+    --bg-elevated: 237 237 234;
+    --fg: 23 23 25;
+    --fg-muted: 64 64 68;
+    --fg-faint: 122 122 126;
   }
 
   html {

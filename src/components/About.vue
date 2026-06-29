@@ -16,7 +16,6 @@ useReveal(rootEl);
     <div class="shell">
       <div class="mb-14 flex items-baseline justify-between md:mb-20">
         <p class="eyebrow" data-reveal>(01) — About</p>
-        <p class="eyebrow hidden md:block" data-reveal>{{ site.location }}</p>
       </div>
 
       <div class="grid gap-14 md:grid-cols-12 md:gap-10">

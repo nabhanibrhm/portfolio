@@ -4,7 +4,7 @@ import { site } from "../data/site";
 
 <section
   id="hero"
-  class="relative isolate flex flex-col justify-start overflow-hidden pb-24 pt-[calc(var(--header-h)+1rem)]"
+  class="relative isolate flex min-h-[100svh] flex-col justify-center overflow-hidden pb-24 pt-[calc(var(--header-h)+1rem)]"
 >
   <!-- Background: masked grid + bottom fade. Given an explicit min-height so the
        grid backdrop keeps its presence even though the content no longer forces
@@ -14,36 +14,84 @@ import { site } from "../data/site";
     <div class="absolute inset-0 bg-gradient-to-b from-background/10 via-background/30 to-background"></div>
   </div>
 
-  <div class="shell w-full">
-    <p class="eyebrow mb-6 md:mb-8" data-reveal>
+  <div class="shell flex w-full flex-col items-center gap-6 text-center md:gap-8">
+    <div class="hero-memoji" data-reveal>
+      <img src="/memoji.webp" alt="Luthfi Nabhan Ibrahim" width="240" height="240" />
+      <img src="/memoji-smile.webp" alt="" aria-hidden="true" width="240" height="240" class="memoji-smile" />
+    </div>
+
+    <p class="eyebrow" data-reveal>
       {site.role} · {site.location}
     </p>
 
-    <div class="flex flex-col gap-8">
-      <p class="max-w-prose text-lg text-foreground-muted text-balance md:text-xl" data-reveal>
-        {site.tagline}
-      </p>
+    <p class="max-w-prose text-lg text-foreground-muted text-balance md:text-xl" data-reveal>
+      {site.tagline}
+    </p>
 
-      <div class="flex justify-center" data-reveal>
-        <a
-          href="/#work"
-          data-nav
-          class="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-medium text-background transition-colors duration-300 ease-smooth hover:bg-accent-deep"
-        >
-          View work
-          <span aria-hidden="true">↓</span>
-        </a>
-      </div>
+    <div data-reveal>
+      <a
+        href="/#work"
+        data-nav
+        class="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-medium text-background transition-colors duration-300 ease-smooth hover:bg-accent-deep"
+      >
+        View work
+        <span aria-hidden="true">↓</span>
+      </a>
     </div>
   </div>
 
 </section>
 
 <style>
+  .hero-memoji {
+    position: relative;
+    height: clamp(8rem, 22vw, 14rem);
+    aspect-ratio: 1 / 1;
+  }
+  /* Both faces stacked & cropped identically (source has a tall transparent
+     lower region) so the smile lines up over the neutral one. */
+  .hero-memoji img {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    object-position: center top;
+    /* Both faces share the same bounce so they squash/stretch in sync. The
+       image swap happens at the squashed low-point, so the bounce hides it.
+       Pure transform/opacity = GPU-only. */
+    animation: memoji-bounce 4s ease-in-out infinite;
+  }
+  /* Smile is swapped in/out sharply at each bounce's squash frame: the
+     sequence reads flat → bounce → smile → bounce → flat. */
+  .memoji-smile {
+    opacity: 0;
+    animation:
+      memoji-bounce 4s ease-in-out infinite,
+      memoji-loop 4s steps(1, end) infinite;
+  }
+  @keyframes memoji-loop {
+    0%, 24% { opacity: 0; }   /* flat held */
+    25%, 66% { opacity: 1; }  /* swap to smile at squash #1, hold */
+    67%, 100% { opacity: 0; } /* swap back to flat at squash #2, hold */
+  }
+  @keyframes memoji-bounce {
+    0%, 18% { transform: scale(1); }     /* flat held */
+    24% { transform: scale(0.88); }      /* squash #1 — swap to smile here */
+    30% { transform: scale(1.06); }      /* stretch */
+    36%, 60% { transform: scale(1); }    /* smile held */
+    66% { transform: scale(0.88); }      /* squash #2 — swap to flat here */
+    72% { transform: scale(1.06); }      /* stretch */
+    78%, 100% { transform: scale(1); }   /* flat held */
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-memoji img,
+    .memoji-smile { animation: none; }
+  }
   .hero-grid {
     background-image:
-      linear-gradient(to right, rgba(238, 238, 238, 0.04) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(238, 238, 238, 0.04) 1px, transparent 1px);
+      linear-gradient(to right, rgb(var(--fg) / 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(var(--fg) / 0.05) 1px, transparent 1px);
     background-size: 64px 64px;
     mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 30%, transparent 75%);
     -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 30%, transparent 75%);

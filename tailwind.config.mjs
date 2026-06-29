@@ -9,17 +9,19 @@ export default {
        * never raw hex. Overrides the old cream/black theme.
        * ------------------------------------------------------------------- */
       colors: {
-        // #000000 — pure-black theme base (soft/elevated derived for surfaces)
+        // Neutral surfaces & text are theme-driven: the RGB triples live in
+        // global.css (:root = dark default, html.light = light overrides). The
+        // rgb(var() / <alpha-value>) form keeps Tailwind opacity modifiers
+        // (bg-background/95, border-foreground/10, …) working.
         background: {
-          DEFAULT: "#000000",
-          soft: "#0d0d0d", // raised surfaces / cards
-          elevated: "#161616", // hover surfaces
+          DEFAULT: "rgb(var(--bg) / <alpha-value>)",
+          soft: "rgb(var(--bg-soft) / <alpha-value>)", // raised surfaces / cards
+          elevated: "rgb(var(--bg-elevated) / <alpha-value>)", // hover surfaces
         },
-        // #EEEEEE — high-contrast off-white
         foreground: {
-          DEFAULT: "#EEEEEE",
-          muted: "#DDDDDD", // secondary copy
-          faint: "#888888", // tertiary / metadata (derived)
+          DEFAULT: "rgb(var(--fg) / <alpha-value>)",
+          muted: "rgb(var(--fg-muted) / <alpha-value>)", // secondary copy
+          faint: "rgb(var(--fg-faint) / <alpha-value>)", // tertiary / metadata
         },
         // #CB2957 — PRIMARY accent (crimson): highlight "Nabhan" + primary CTAs
         accent: {

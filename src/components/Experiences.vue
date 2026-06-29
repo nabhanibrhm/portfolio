@@ -60,7 +60,7 @@ const current = computed(() =>
 
 <style scoped>
 .index-list {
-  border-top: 1px solid rgba(238, 238, 238, 0.1);
+  border-top: 1px solid rgb(var(--fg) / 0.1);
 }
 .index-row {
   display: flex;
@@ -68,7 +68,7 @@ const current = computed(() =>
   align-items: baseline;
   gap: 0.5rem 1.5rem;
   padding: 1.75rem 0;
-  border-bottom: 1px solid rgba(238, 238, 238, 0.1);
+  border-bottom: 1px solid rgb(var(--fg) / 0.1);
   cursor: default;
   transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -93,7 +93,7 @@ const current = computed(() =>
   color: #cb2957;
 }
 .idx-sub {
-  color: #dddddd;
+  color: rgb(var(--fg-muted));
   margin-left: auto;
 }
 .idx-meta {

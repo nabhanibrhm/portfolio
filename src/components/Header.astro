@@ -8,46 +8,64 @@ import { navLinks, site } from "../data/site";
 >
   <div class="shell flex h-[var(--header-h)] items-center justify-between">
     <!-- Wordmark -->
-    <a href="/" data-nav class="flex items-center gap-2.5 text-base font-semibold tracking-tight">
-      <span class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-accent text-xs font-bold text-background">
+    <a href="/" data-nav class="flex items-center gap-3 text-lg font-semibold tracking-tight">
+      <span class="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-accent text-sm font-bold text-background">
         LN
       </span>
       <span class="hidden sm:inline">Luthfi <span class="text-accent">Nabhan</span></span>
     </a>
 
-    <!-- Desktop nav -->
-    <nav class="hidden items-center gap-8 md:flex">
-      {
-        navLinks.map((l) => (
-          <a
-            href={l.href}
-            data-nav
-            data-spy={l.href}
-            class="text-base text-foreground-muted transition-colors duration-300 hover:text-foreground"
-          >
-            {l.label}
-          </a>
-        ))
-      }
-      <a
-        href={`mailto:${site.email}`}
-        class="rounded-full bg-foreground px-5 py-2 text-base font-medium text-background transition-colors duration-300 hover:bg-accent hover:text-foreground"
-      >
-        Let&rsquo;s talk
-      </a>
-    </nav>
+    <div class="flex items-center gap-4 md:gap-8">
+      <!-- Desktop nav -->
+      <nav class="hidden items-center gap-8 md:flex">
+        {
+          navLinks.map((l) => (
+            <a
+              href={l.href}
+              data-nav
+              data-spy={l.href}
+              class="text-base text-foreground-muted transition-colors duration-300 hover:text-foreground"
+            >
+              {l.label}
+            </a>
+          ))
+        }
+        <a
+          href={`mailto:${site.email}`}
+          class="rounded-full bg-foreground px-5 py-2 text-base font-medium text-background transition-colors duration-300 hover:bg-accent hover:text-foreground"
+        >
+          Let&rsquo;s talk
+        </a>
+      </nav>
 
-    <!-- Mobile toggle -->
-    <button
-      id="menu-toggle"
-      type="button"
-      aria-label="Open menu"
-      aria-expanded="false"
-      class="relative z-50 flex h-10 w-10 items-center justify-center md:hidden"
-    >
-      <span class="menu-bar"></span>
-      <span class="menu-bar"></span>
-    </button>
+      <!-- Theme toggle (sun in light mode, moon in dark) -->
+      <button
+        id="theme-toggle"
+        type="button"
+        aria-label="Toggle color theme"
+        class="relative z-50 flex h-10 w-10 items-center justify-center rounded-full border border-foreground/15 text-foreground-muted transition-colors duration-300 hover:border-foreground/40 hover:text-foreground"
+      >
+        <svg class="icon-moon h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+        <svg class="icon-sun h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"></circle>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+        </svg>
+      </button>
+
+      <!-- Mobile toggle -->
+      <button
+        id="menu-toggle"
+        type="button"
+        aria-label="Open menu"
+        aria-expanded="false"
+        class="relative z-50 flex h-10 w-10 items-center justify-center md:hidden"
+      >
+        <span class="menu-bar"></span>
+        <span class="menu-bar"></span>
+      </button>
+    </div>
   </div>
 
   <!-- Mobile overlay -->
@@ -84,6 +102,16 @@ import { navLinks, site } from "../data/site";
      was the source of the hero-only scroll jank. A solid bar costs nothing. */
   #site-header.is-scrolled {
     @apply border-foreground/10 bg-background/95;
+  }
+  /* Show the icon for the active theme: moon in dark, sun in light. */
+  .icon-sun {
+    display: none;
+  }
+  :global(html.light) .icon-moon {
+    display: none;
+  }
+  :global(html.light) .icon-sun {
+    display: block;
   }
   .menu-bar {
     @apply absolute h-px w-6 bg-foreground transition-all duration-300 ease-smooth;
@@ -149,6 +177,16 @@ import { navLinks, site } from "../data/site";
   document.addEventListener("click", (e) => {
     if (!(e.target as HTMLElement).closest?.("#menu-toggle")) return;
     setMenu(toggle()?.getAttribute("aria-expanded") !== "true");
+  });
+
+  // Theme toggle — flip the `light` class on <html> and remember the choice.
+  // (The no-flash init in Layout.astro reads this on load / after each nav.)
+  document.addEventListener("click", (e) => {
+    if (!(e.target as HTMLElement).closest?.("#theme-toggle")) return;
+    const light = document.documentElement.classList.toggle("light");
+    try {
+      localStorage.setItem("theme", light ? "light" : "dark");
+    } catch (err) {}
   });
 
   // Condense header background once scrolled
