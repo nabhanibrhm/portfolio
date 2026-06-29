@@ -1,23 +1,16 @@
-/* ---------------------------------------------------------------------------
- * Single source of truth for site content.
- * Ported from the previous Next.js build and enriched with gallery metadata
- * (slugs, categories, accent assignment). No facts were invented — categories
- * are descriptors of the listed tech stack, and accents are purely visual.
- * ------------------------------------------------------------------------- */
-
 export const site = {
   name: "Luthfi Nabhan Ibrahim",
-  // The accent-highlighted token rendered in the hero ("Nabhan" in orange).
   highlight: "Nabhan",
-  role: "Data Engineer",
+  role: "Frontend & Data Engineer",
   tagline:
-    "I build resilient data platforms, streaming pipelines, and the occasional shader.",
-  location: "Jakarta, ID",
-  email: "luthfi.ibrahim@smma.co.id",
+    "Software Engineer specializing in data architecture, data analysis, and interactive frontend design",
+  location: "Bekasi, West Java, ID",
+  email: "luthfinabhan@gmail.com",
   social: {
-    // TODO: swap in real profile URLs — these placeholders were carried over.
-    github: "https://github.com/",
-    linkedin: "https://linkedin.com/",
+
+    github: "https://github.com/nabhanibrhm",
+    linkedin: "https://linkedin.com/in/luthfinabhanibrahim",
+    whatsapp: "https://wa.me/6282297765806",
   },
 } as const;
 
@@ -62,9 +55,9 @@ export const experiences: Experience[] = [
     accent: "accent",
   },
   {
-    role: "Analytics Engineer",
-    company: "Previous Co.",
-    period: "2021 — 2023",
+    role: "HRIS Intern",
+    company: "PT. Global Tiket Network (tiket.com)",
+    period: "2020 — 2021",
     description:
       "Owned dbt models and the semantic layer powering self-serve analytics.",
     accent: "secondary",
@@ -79,8 +72,8 @@ export type Education = {
 
 export const education: Education[] = [
   {
-    degree: "B.Sc. Computer Science",
-    school: "University",
+    degree: "Bachelor of Information Systems",
+    school: "Gunadarma University",
     period: "2017 — 2021",
   },
 ];

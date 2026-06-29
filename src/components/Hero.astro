@@ -4,10 +4,12 @@ import { site } from "../data/site";
 
 <section
   id="hero"
-  class="relative isolate flex min-h-[82svh] flex-col justify-center overflow-hidden pb-16 pt-[calc(var(--header-h)+1rem)]"
+  class="relative isolate flex flex-col justify-start overflow-hidden pb-24 pt-[calc(var(--header-h)+1rem)]"
 >
-  <!-- Background: masked grid + bottom fade -->
-  <div class="pointer-events-none absolute inset-0 -z-10">
+  <!-- Background: masked grid + bottom fade. Given an explicit min-height so the
+       grid backdrop keeps its presence even though the content no longer forces
+       a tall section. -->
+  <div class="pointer-events-none absolute inset-x-0 top-0 -z-10 min-h-[60svh] h-full">
     <div class="absolute inset-0 hero-grid"></div>
     <div class="absolute inset-0 bg-gradient-to-b from-background/10 via-background/30 to-background"></div>
   </div>
@@ -17,57 +19,27 @@ import { site } from "../data/site";
       {site.role} · {site.location}
     </p>
 
-    <h1 class="hero-title font-bold tracking-tightest">
-      <span class="block overflow-hidden" data-mask><span class="block">Luthfi</span></span>
-      <span class="block overflow-hidden" data-mask>
-        <span class="block text-accent">{site.highlight}</span>
-      </span>
-      <span class="block overflow-hidden" data-mask><span class="block">Ibrahim</span></span>
-    </h1>
-
-    <div class="mt-8 flex flex-col gap-8 md:mt-12 md:flex-row md:items-end md:justify-between">
+    <div class="flex flex-col gap-8">
       <p class="max-w-prose text-lg text-foreground-muted text-balance md:text-xl" data-reveal>
         {site.tagline}
       </p>
 
-      <div class="flex shrink-0 flex-wrap items-center gap-3" data-reveal>
+      <div class="flex justify-center" data-reveal>
         <a
           href="/#work"
           data-nav
           class="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-medium text-background transition-colors duration-300 ease-smooth hover:bg-accent-deep"
         >
           View work
-          <span aria-hidden="true">→</span>
-        </a>
-        <a
-          href="/#contact"
-          data-nav
-          class="inline-flex items-center gap-2 rounded-full border border-foreground/20 px-6 py-3 text-sm font-medium text-foreground transition-colors duration-300 ease-smooth hover:border-secondary hover:bg-secondary hover:text-foreground"
-        >
-          Get in touch
+          <span aria-hidden="true">↓</span>
         </a>
       </div>
     </div>
   </div>
 
-  <!-- Scroll cue -->
-  <a
-    href="/#about"
-    data-nav
-    class="group absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2 text-foreground-faint transition-colors hover:text-foreground"
-    data-reveal
-    aria-label="Scroll to about"
-  >
-    <span class="font-mono text-[10px] uppercase tracking-kicker">Scroll</span>
-    <span class="scroll-line"></span>
-  </a>
 </section>
 
 <style>
-  .hero-title {
-    font-size: clamp(3rem, 13vw, 11rem);
-    line-height: 0.92;
-  }
   .hero-grid {
     background-image:
       linear-gradient(to right, rgba(238, 238, 238, 0.04) 1px, transparent 1px),
@@ -80,28 +52,6 @@ import { site } from "../data/site";
        jank. On a static layer the compositor just translates the cached texture. */
     transform: translateZ(0);
     backface-visibility: hidden;
-  }
-  .scroll-line {
-    position: relative;
-    display: block;
-    height: 48px;
-    width: 1px;
-    overflow: hidden;
-    background: rgba(238, 238, 238, 0.15);
-  }
-  .scroll-line::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: #cb2957;
-    animation: scroll-cue 2s ease-in-out infinite;
-  }
-  @keyframes scroll-cue {
-    0% { transform: translateY(-100%); }
-    60%, 100% { transform: translateY(100%); }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .scroll-line::after { animation: none; }
   }
 </style>
 

@@ -8,8 +8,8 @@ import { navLinks, site } from "../data/site";
 >
   <div class="shell flex h-[var(--header-h)] items-center justify-between">
     <!-- Wordmark -->
-    <a href="/" data-nav class="flex items-center gap-2.5 text-sm font-semibold tracking-tight">
-      <span class="inline-flex h-7 w-7 items-center justify-center rounded-md bg-accent text-[11px] font-bold text-background">
+    <a href="/" data-nav class="flex items-center gap-2.5 text-base font-semibold tracking-tight">
+      <span class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-accent text-xs font-bold text-background">
         LN
       </span>
       <span class="hidden sm:inline">Luthfi <span class="text-accent">Nabhan</span></span>
@@ -23,7 +23,7 @@ import { navLinks, site } from "../data/site";
             href={l.href}
             data-nav
             data-spy={l.href}
-            class="text-sm text-foreground-muted transition-colors duration-300 hover:text-foreground"
+            class="text-base text-foreground-muted transition-colors duration-300 hover:text-foreground"
           >
             {l.label}
           </a>
@@ -31,7 +31,7 @@ import { navLinks, site } from "../data/site";
       }
       <a
         href={`mailto:${site.email}`}
-        class="rounded-full bg-foreground px-5 py-2 text-sm font-medium text-background transition-colors duration-300 hover:bg-accent hover:text-foreground"
+        class="rounded-full bg-foreground px-5 py-2 text-base font-medium text-background transition-colors duration-300 hover:bg-accent hover:text-foreground"
       >
         Let&rsquo;s talk
       </a>
