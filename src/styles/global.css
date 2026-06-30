@@ -16,28 +16,48 @@
 @layer base {
   :root {
     --header-h: 6rem; /* fixed-header height → drives anchor scroll offset */
-    --accent: #cb2957;
-    --secondary: #a81f45;
 
-    /* Neutral palette as space-separated RGB triples (consumed by Tailwind's
-       rgb(var() / <alpha-value>) tokens and by scoped styles). Default = dark. */
-    --bg: 0 0 0;
-    --bg-soft: 13 13 13;
-    --bg-elevated: 22 22 22;
-    --fg: 238 238 238;
-    --fg-muted: 221 221 221;
-    --fg-faint: 136 136 136;
+    /* Monochrome accent — tonal, drawn from the same warm-grey palette (no
+       separate hue). Stored as RGB triples like the neutrals so Tailwind's
+       rgb(var() / <alpha-value>) tokens + scoped rgb(var(--accent)) both work.
+       Dark default: sage accent reads against the near-black surfaces. */
+    --accent: 193 193 169; /* #c1c1a9 sage */
+    --accent-soft: 227 226 195; /* #e3e2c3 */
+    --accent-deep: 139 138 135; /* #8b8a87 — hover/pressed */
+    --secondary: 139 138 135; /* #8b8a87 */
+    --secondary-soft: 193 193 169; /* #c1c1a9 */
+    --secondary-deep: 106 106 103; /* #6a6a67 */
+
+    /* Warm dark-grey palette (octet.design) as space-separated RGB triples,
+       consumed by Tailwind's rgb(var() / <alpha-value>) tokens and scoped
+       styles. Default = dark: near-black surfaces, warm-cream text.
+       #141413 #272727 #6a6a67 #8b8a87 #c1c1a9 #e3e2c3 */
+    --bg: 20 20 19; /* #141413 */
+    --bg-soft: 29 29 27; /* between #141413 and #272727 */
+    --bg-elevated: 39 39 39; /* #272727 */
+    --fg: 227 226 195; /* #e3e2c3 */
+    --fg-muted: 193 193 169; /* #c1c1a9 */
+    --fg-faint: 139 138 135; /* #8b8a87 */
   }
 
   /* Light theme — toggled by adding `.light` to <html> (see Header + the
-     no-flash init script in Layout.astro). Accent stays the same crimson. */
+     no-flash init script in Layout.astro). Same palette inverted: warm-cream
+     surfaces, near-black text. Accent stays the same crimson. */
   html.light {
-    --bg: 247 247 245;
-    --bg-soft: 255 255 255;
-    --bg-elevated: 237 237 234;
-    --fg: 23 23 25;
-    --fg-muted: 64 64 68;
-    --fg-faint: 122 122 126;
+    --bg: 227 226 195; /* #e3e2c3 */
+    --bg-soft: 239 238 221; /* lifted cream for elevated surfaces */
+    --bg-elevated: 193 193 169; /* #c1c1a9 */
+    --fg: 20 20 19; /* #141413 */
+    --fg-muted: 39 39 39; /* #272727 */
+    --fg-faint: 106 106 103; /* #6a6a67 */
+
+    /* Light: accent inverts to a readable mid/dark grey on the cream surface. */
+    --accent: 106 106 103; /* #6a6a67 */
+    --accent-soft: 139 138 135; /* #8b8a87 */
+    --accent-deep: 39 39 39; /* #272727 — hover/pressed */
+    --secondary: 106 106 103; /* #6a6a67 */
+    --secondary-soft: 139 138 135; /* #8b8a87 */
+    --secondary-deep: 39 39 39; /* #272727 */
   }
 
   html {
@@ -60,8 +80,8 @@
   }
 
   ::selection {
-    background: color-mix(in oklab, var(--accent) 70%, transparent);
-    color: #fff;
+    background: color-mix(in oklab, rgb(var(--accent)) 70%, transparent);
+    color: rgb(var(--bg));
   }
 
   /* Lenis smooth-scroll hooks */

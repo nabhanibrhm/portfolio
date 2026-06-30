@@ -1,35 +1,25 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { ref } from "vue";
 import { projects } from "../data/site";
 import { useReveal } from "../lib/useReveal";
-import { useHoverThumb } from "../lib/useHoverThumb";
 
 const rootEl = ref<HTMLElement | null>(null);
 useReveal(rootEl);
-
-const { thumb, active, enter, leave } = useHoverThumb();
-const current = computed(() =>
-  active.value === null ? null : projects[active.value],
-);
 </script>
 
 <template>
   <section id="work" ref="rootEl" class="anchor-offset relative py-20 md:py-40">
     <div class="shell">
       <div class="mb-10 flex items-baseline justify-between md:mb-14">
-        <h2 class="eyebrow" data-reveal>(03) — Selected Work</h2>
+        <h2 class="eyebrow" data-reveal>(03) — Projects</h2>
         <p class="eyebrow hidden md:block" data-reveal>
           {{ projects.length }} projects
         </p>
       </div>
 
-      <ul class="index-list" @pointerleave="leave">
+      <ul class="index-list">
         <li v-for="(p, i) in projects" :key="p.slug" data-reveal>
-          <a
-            :href="`/work/${p.slug}`"
-            class="index-row group"
-            @pointerenter="enter(i)"
-          >
+          <a :href="`/work/${p.slug}`" class="index-row group">
             <span class="idx-num">0{{ i + 1 }}</span>
             <span class="idx-title">{{ p.title }}</span>
             <span class="idx-sub">{{ p.category }}</span>
@@ -37,21 +27,6 @@ const current = computed(() =>
           </a>
         </li>
       </ul>
-    </div>
-
-    <!-- Cursor-tracked cover thumbnail (rich-media stand-in built from brand colors) -->
-    <div ref="thumb" class="hover-thumb" aria-hidden="true">
-      <div
-        v-if="current"
-        class="thumb-cover"
-        :class="current.accent === 'accent' ? 'is-accent' : 'is-secondary'"
-      >
-        <span class="thumb-cover__index">0{{ (active ?? 0) + 1 }}</span>
-        <div class="thumb-cover__meta">
-          <span class="thumb-cover__cat">{{ current.category }}</span>
-          <span class="thumb-cover__tags">{{ current.tags.join(" · ") }}</span>
-        </div>
-      </div>
     </div>
   </section>
 </template>
@@ -78,7 +53,7 @@ const current = computed(() =>
   width: 2rem;
   font-family: "Satoshi", ui-monospace, monospace;
   font-size: 0.8rem;
-  color: #888888;
+  color: rgb(var(--fg-faint));
 }
 .idx-title {
   font-size: clamp(1.5rem, 3.2vw, 2.5rem);
@@ -87,7 +62,7 @@ const current = computed(() =>
   transition: color 0.4s ease;
 }
 .index-row:hover .idx-title {
-  color: #cb2957;
+  color: rgb(var(--accent));
 }
 .idx-sub {
   color: rgb(var(--fg-muted));
@@ -95,7 +70,7 @@ const current = computed(() =>
 }
 .idx-arrow {
   font-size: 1.25rem;
-  color: #888888;
+  color: rgb(var(--fg-faint));
   opacity: 0;
   transform: translate(-8px, 4px);
   transition:
@@ -106,7 +81,7 @@ const current = computed(() =>
 .index-row:hover .idx-arrow {
   opacity: 1;
   transform: translate(0, 0);
-  color: #cb2957;
+  color: rgb(var(--accent));
 }
 @media (max-width: 640px) {
   .index-row {
@@ -131,66 +106,6 @@ const current = computed(() =>
     margin-left: 0;
   }
   .idx-arrow {
-    display: none;
-  }
-}
-
-/* Floating cover */
-.hover-thumb {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 30;
-  width: 340px;
-  pointer-events: none;
-}
-.thumb-cover {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  aspect-ratio: 4 / 3;
-  padding: 1.5rem;
-  border-radius: 1.25rem;
-  overflow: hidden;
-  color: #eeeeee;
-  border: 1px solid rgba(238, 238, 238, 0.12);
-  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.6);
-}
-.thumb-cover.is-accent {
-  background:
-    radial-gradient(130% 130% at 100% 0%, rgba(203, 41, 87, 0.85), transparent 55%),
-    linear-gradient(160deg, #2a0e16, #000000);
-}
-.thumb-cover.is-secondary {
-  background:
-    radial-gradient(130% 130% at 100% 0%, rgba(168, 31, 69, 0.85), transparent 55%),
-    linear-gradient(160deg, #1e0a10, #000000);
-}
-.thumb-cover__index {
-  font-size: 3.5rem;
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: -0.04em;
-  color: rgba(238, 238, 238, 0.95);
-}
-.thumb-cover__meta {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-.thumb-cover__cat {
-  font-size: 1.05rem;
-  font-weight: 600;
-}
-.thumb-cover__tags {
-  font-family: "Satoshi", ui-monospace, monospace;
-  font-size: 0.72rem;
-  letter-spacing: 0.04em;
-  color: rgba(238, 238, 238, 0.7);
-}
-@media (hover: none) {
-  .hover-thumb {
     display: none;
   }
 }

@@ -1,16 +1,10 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { ref } from "vue";
 import { experiences } from "../data/site";
 import { useReveal } from "../lib/useReveal";
-import { useHoverThumb } from "../lib/useHoverThumb";
 
 const rootEl = ref<HTMLElement | null>(null);
 useReveal(rootEl);
-
-const { thumb, active, enter, leave } = useHoverThumb();
-const current = computed(() =>
-  active.value === null ? null : experiences[active.value],
-);
 </script>
 
 <template>
@@ -27,13 +21,13 @@ const current = computed(() =>
         </p>
       </div>
 
-      <ul class="index-list" @pointerleave="leave">
+      <ul class="index-list">
         <li
           v-for="(e, i) in experiences"
           :key="e.role + e.company"
           data-reveal
         >
-          <div class="index-row" @pointerenter="enter(i)">
+          <div class="index-row">
             <span class="idx-num">0{{ i + 1 }}</span>
             <span class="idx-title">{{ e.role }}</span>
             <span class="idx-sub">{{ e.company }}</span>
@@ -41,19 +35,6 @@ const current = computed(() =>
           </div>
         </li>
       </ul>
-    </div>
-
-    <!-- Cursor-tracked hover thumbnail -->
-    <div ref="thumb" class="hover-thumb" aria-hidden="true">
-      <div
-        v-if="current"
-        class="thumb-card"
-        :class="current.accent === 'accent' ? 'is-accent' : 'is-secondary'"
-      >
-        <span class="thumb-kicker">{{ current.period }}</span>
-        <span class="thumb-title">{{ current.company }}</span>
-        <span class="thumb-desc">{{ current.description }}</span>
-      </div>
     </div>
   </section>
 </template>
@@ -81,7 +62,7 @@ const current = computed(() =>
   width: 2rem;
   font-family: "Satoshi", ui-monospace, monospace;
   font-size: 0.8rem;
-  color: #888888;
+  color: rgb(var(--fg-faint));
 }
 .idx-title {
   font-size: clamp(1.5rem, 3.2vw, 2.5rem);
@@ -90,7 +71,7 @@ const current = computed(() =>
   transition: color 0.4s ease;
 }
 .index-row:hover .idx-title {
-  color: #cb2957;
+  color: rgb(var(--accent));
 }
 .idx-sub {
   color: rgb(var(--fg-muted));
@@ -99,7 +80,7 @@ const current = computed(() =>
 .idx-meta {
   font-family: "Satoshi", ui-monospace, monospace;
   font-size: 0.8rem;
-  color: #888888;
+  color: rgb(var(--fg-faint));
   min-width: 8.5rem;
   text-align: right;
 }
@@ -130,58 +111,6 @@ const current = computed(() =>
     grid-row: 3;
     min-width: 0;
     text-align: left;
-  }
-}
-
-/* Floating thumbnail */
-.hover-thumb {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 30;
-  width: 320px;
-  pointer-events: none;
-}
-.thumb-card {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 1.5rem;
-  border-radius: 1.25rem;
-  color: #eeeeee;
-  border: 1px solid rgba(238, 238, 238, 0.12);
-  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.6);
-}
-.thumb-card.is-accent {
-  background:
-    radial-gradient(120% 120% at 0% 0%, rgba(203, 41, 87, 0.55), transparent 60%),
-    #0d0d0d;
-}
-.thumb-card.is-secondary {
-  background:
-    radial-gradient(120% 120% at 0% 0%, rgba(168, 31, 69, 0.55), transparent 60%),
-    #0d0d0d;
-}
-.thumb-kicker {
-  font-family: "Satoshi", ui-monospace, monospace;
-  font-size: 0.7rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: rgba(238, 238, 238, 0.7);
-}
-.thumb-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-}
-.thumb-desc {
-  font-size: 0.85rem;
-  line-height: 1.5;
-  color: rgba(238, 238, 238, 0.75);
-}
-@media (hover: none) {
-  .hover-thumb {
-    display: none;
   }
 }
 </style>

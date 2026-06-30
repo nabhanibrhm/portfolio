@@ -23,18 +23,19 @@ export default {
           muted: "rgb(var(--fg-muted) / <alpha-value>)", // secondary copy
           faint: "rgb(var(--fg-faint) / <alpha-value>)", // tertiary / metadata
         },
-        // #CB2957 — PRIMARY accent (crimson): highlight "Nabhan" + primary CTAs
+        // Monochrome accent — theme-driven tonal grey (triples in global.css):
+        // sage on the dark theme, mid-grey on light. Highlights "Nabhan" +
+        // primary CTAs. No separate hue is introduced.
         accent: {
-          DEFAULT: "#CB2957",
-          soft: "#e0476f", // lighter (derived)
-          deep: "#a81f45", // darker (derived)
+          DEFAULT: "rgb(var(--accent) / <alpha-value>)",
+          soft: "rgb(var(--accent-soft) / <alpha-value>)",
+          deep: "rgb(var(--accent-deep) / <alpha-value>)",
         },
-        // SECONDARY (deep-crimson): hover states + visual depth — mono palette,
-        // derived from the accent so no second hue is introduced.
+        // SECONDARY: hover states + visual depth, one tone deeper than accent.
         secondary: {
-          DEFAULT: "#a81f45",
-          soft: "#cb2957",
-          deep: "#7d1733",
+          DEFAULT: "rgb(var(--secondary) / <alpha-value>)",
+          soft: "rgb(var(--secondary-soft) / <alpha-value>)",
+          deep: "rgb(var(--secondary-deep) / <alpha-value>)",
         },
       },
       fontFamily: {

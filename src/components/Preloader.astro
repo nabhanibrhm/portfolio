@@ -21,7 +21,7 @@ import { site } from "../data/site";
     align-items: center;
     justify-content: center;
     gap: 2.5rem;
-    background: #000000;
+    background: rgb(var(--bg));
   }
   #preloader.is-hidden {
     display: none;
@@ -49,7 +49,7 @@ import { site } from "../data/site";
     font-size: 0.75rem;
     letter-spacing: 0.3em;
     text-transform: uppercase;
-    color: #888888;
+    color: rgb(var(--fg-faint));
   }
   .pl-count {
     font-size: clamp(3rem, 12vw, 6rem);
@@ -57,10 +57,10 @@ import { site } from "../data/site";
     line-height: 1;
     letter-spacing: -0.04em;
     font-variant-numeric: tabular-nums;
-    color: #eeeeee;
+    color: rgb(var(--fg));
   }
   .pl-pct {
-    color: #cb2957;
+    color: rgb(var(--accent));
   }
   .pl-bar {
     position: absolute;
@@ -68,13 +68,13 @@ import { site } from "../data/site";
     bottom: 0;
     height: 2px;
     width: 100%;
-    background: rgba(238, 238, 238, 0.08);
+    background: rgb(var(--fg) / 0.08);
   }
   .pl-bar > span {
     display: block;
     height: 100%;
     width: 0%;
-    background: #cb2957;
+    background: rgb(var(--accent));
   }
 </style>
 

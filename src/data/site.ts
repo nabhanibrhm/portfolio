@@ -29,10 +29,12 @@ export const skills = [
   "Airflow",
   "dbt",
   "Kafka",
-  "BigQuery",
-  "Snowflake",
-  "Terraform",
-  "TypeScript",
+  "Tableau",
+  "PowerBI",
+  "Metabase",
+  "Bash Scripting",
+  "JavaScript",
+  
 ];
 
 export type Accent = "accent" | "secondary";

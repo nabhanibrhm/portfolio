@@ -12,7 +12,8 @@ if (!project) return Astro.redirect("/404");
 
 const idx = projects.findIndex((p) => p.slug === project.slug);
 const next = projects[(idx + 1) % projects.length];
-const accentHex = project.accent === "accent" ? "#CB2957" : "#a81f45";
+// Monochrome cover glow — warm-grey palette (sage / mid-grey), no crimson.
+const accentHex = project.accent === "accent" ? "#c1c1a9" : "#8b8a87";
 ---
 
 <Layout
@@ -43,7 +44,7 @@ const accentHex = project.accent === "accent" ? "#CB2957" : "#a81f45";
       <!-- Cover (brand-color media stand-in) -->
       <div
         class="mt-12 overflow-hidden rounded-3xl border border-foreground/10"
-        style={`aspect-ratio:16/7; background: radial-gradient(120% 120% at 100% 0%, ${accentHex}cc, transparent 55%), linear-gradient(160deg,#0d0d0d,#000000);`}
+        style={`aspect-ratio:16/7; background: radial-gradient(120% 120% at 100% 0%, ${accentHex}cc, transparent 55%), linear-gradient(160deg,#272727,#141413);`}
         data-parallax="-0.06"
       >
       </div>
