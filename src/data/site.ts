@@ -48,7 +48,7 @@ export type Experience = {
 export const experiences: Experience[] = [
   {
     role: "Data Engineer",
-    company: "Sinarmas",
+    company: "PT. Sinarmas Multiartha Tbk",
     period: "2023 — Present",
     description:
       "Building data platforms, streaming pipelines, and cost-aware lakehouse infrastructure.",
@@ -81,7 +81,6 @@ export const education: Education[] = [
 export type Project = {
   slug: string;
   title: string;
-  /** Short discipline descriptor — derived from the tech stack, not invented. */
   category: string;
   description: string;
   tags: string[];
@@ -122,7 +121,6 @@ export const projects: Project[] = [
 export const getProject = (slug?: string) =>
   projects.find((p) => p.slug === slug);
 
-/** Anchor sections used by the fixed header nav. */
 export const navLinks = [
   { label: "About", href: "/#about" },
   { label: "Experience", href: "/#experience" },

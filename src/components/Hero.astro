@@ -16,7 +16,7 @@ import { site } from "../data/site";
 
   <div class="shell flex w-full flex-col items-center gap-6 text-center md:gap-8">
     <div class="hero-memoji" data-reveal>
-      <img src="/memoji.webp" alt="Luthfi Nabhan Ibrahim" width="240" height="240" />
+      <img src="/neutral-memoji.webp" alt="Luthfi Nabhan Ibrahim" width="240" height="240" />
       <img src="/memoji-smile.webp" alt="" aria-hidden="true" width="240" height="240" class="memoji-smile" />
     </div>
 
@@ -45,11 +45,12 @@ import { site } from "../data/site";
 <style>
   .hero-memoji {
     position: relative;
-    height: clamp(8rem, 22vw, 14rem);
+    height: clamp(14rem, 34vw, 24rem);
     aspect-ratio: 1 / 1;
   }
   /* Both faces stacked & cropped identically (source has a tall transparent
-     lower region) so the smile lines up over the neutral one. */
+     lower region) so the smile lines up over the neutral one. The bounce +
+     swap loop is driven by GSAP (see the script below). */
   .hero-memoji img {
     position: absolute;
     inset: 0;
@@ -57,36 +58,10 @@ import { site } from "../data/site";
     width: 100%;
     object-fit: cover;
     object-position: center top;
-    /* Both faces share the same bounce so they squash/stretch in sync. The
-       image swap happens at the squashed low-point, so the bounce hides it.
-       Pure transform/opacity = GPU-only. */
-    animation: memoji-bounce 4s ease-in-out infinite;
+    will-change: transform, opacity;
   }
-  /* Smile is swapped in/out sharply at each bounce's squash frame: the
-     sequence reads flat → bounce → smile → bounce → flat. */
   .memoji-smile {
     opacity: 0;
-    animation:
-      memoji-bounce 4s ease-in-out infinite,
-      memoji-loop 4s steps(1, end) infinite;
-  }
-  @keyframes memoji-loop {
-    0%, 24% { opacity: 0; }   /* flat held */
-    25%, 66% { opacity: 1; }  /* swap to smile at squash #1, hold */
-    67%, 100% { opacity: 0; } /* swap back to flat at squash #2, hold */
-  }
-  @keyframes memoji-bounce {
-    0%, 18% { transform: scale(1); }     /* flat held */
-    24% { transform: scale(0.88); }      /* squash #1 — swap to smile here */
-    30% { transform: scale(1.06); }      /* stretch */
-    36%, 60% { transform: scale(1); }    /* smile held */
-    66% { transform: scale(0.88); }      /* squash #2 — swap to flat here */
-    72% { transform: scale(1.06); }      /* stretch */
-    78%, 100% { transform: scale(1); }   /* flat held */
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .hero-memoji img,
-    .memoji-smile { animation: none; }
   }
   .hero-grid {
     background-image:
@@ -131,6 +106,41 @@ import { site } from "../data/site";
       { autoAlpha: 1, y: 0, duration: 0.8, ease: "power3.out", stagger: 0.1 },
       "-=0.55",
     );
+
+    runMemojiLoop();
+  }
+
+  // Looping bounce + neutral↔smile swap, driven by GSAP. Sequence reads
+  // flat → squash (swap to smile) → stretch/settle → hold → squash (swap to
+  // flat) → stretch/settle → hold → repeat. The image swap fires at each
+  // squash low-point so the bounce hides it. Scaling only the <img>s (not the
+  // wrapper) keeps it clear of the reveal's y/autoAlpha on .hero-memoji.
+  let memojiTl: gsap.core.Timeline | null = null;
+  function runMemojiLoop() {
+    const wrap = document.querySelector<HTMLElement>("#hero .hero-memoji");
+    if (!wrap) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const faces = wrap.querySelectorAll<HTMLElement>("img");
+    const neutral = wrap.querySelector<HTMLElement>("img:not(.memoji-smile)");
+    const smile = wrap.querySelector<HTMLElement>(".memoji-smile");
+    if (!faces.length || !neutral || !smile) return;
+
+    memojiTl?.kill();
+    memojiTl = gsap.timeline({ repeat: -1 });
+    memojiTl
+      // → smile (hide neutral so it can't show through the smile's transparency)
+      .to(faces, { scale: 0.88, duration: 0.18, ease: "power2.in" }, "+=1.4")
+      .set(smile, { opacity: 1 })
+      .set(neutral, { opacity: 0 })
+      .to(faces, { scale: 1.06, duration: 0.16, ease: "power2.out" })
+      .to(faces, { scale: 1, duration: 0.5, ease: "elastic.out(1, 0.5)" })
+      // → flat
+      .to(faces, { scale: 0.88, duration: 0.18, ease: "power2.in" }, "+=1.4")
+      .set(neutral, { opacity: 1 })
+      .set(smile, { opacity: 0 })
+      .to(faces, { scale: 1.06, duration: 0.16, ease: "power2.out" })
+      .to(faces, { scale: 1, duration: 0.5, ease: "elastic.out(1, 0.5)" });
   }
 
   // Wait for the preloader on first load; run immediately on later navigations.
