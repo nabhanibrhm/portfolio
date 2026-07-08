@@ -51,8 +51,18 @@ accepted**:
 Node 20 toolchain. Revisit when moving to Node 22 (then migrate to Astro 6 +
 Tailwind 4 / `@tailwindcss/vite`), or if Astro backports fixes to 5.x.
 
-The esbuild dev-server advisory (Windows file-read) *is* fixed via a scoped
-`overrides` pin to `esbuild@0.28.1` in `package.json`.
+`npm audit` also reports the **esbuild dev-server advisory** (GHSA-g7r4-m6w7-qqqr,
+arbitrary file read via the dev server on Windows; affects `0.27.3`–`0.28.0`, which
+is astro 5.18.2's declared range → `0.27.7`). This is **knowingly accepted**: it is
+dev-server-only and Windows-only, so it is unreachable in the static production
+build (Vercel/Linux, no dev server exposed).
+
+**Do NOT re-add an `overrides` pin for esbuild** (e.g. `esbuild@0.28.1`). The pin
+was removed because forcing esbuild outside astro's declared `^0.27.3` range hoists
+a mismatched native binary that Vite's own `esbuild@0.25.x` JS wrapper then loads,
+breaking clean installs (Vercel) with bogus "Transforming destructuring … is not
+supported yet" errors. Let astro (`0.27.x`) and vite (`0.25.x`) each resolve their
+own tested esbuild.
 
 ## Commands
 
