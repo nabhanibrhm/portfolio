@@ -51,7 +51,7 @@ export const experiences: Experience[] = [
   {
     role: "Data Engineer",
     company: "PT. Sinarmas Multiartha Tbk",
-    period: "2023 — Present",
+    period: "2022 — Present",
     description:
       "Building data platforms, streaming pipelines, and cost-aware lakehouse infrastructure.",
     accent: "accent",
@@ -63,6 +63,14 @@ export const experiences: Experience[] = [
     description:
       "Owned dbt models and the semantic layer powering self-serve analytics.",
     accent: "secondary",
+  },
+    {
+    role: "Part Time Laboratory Assistant",
+    company: "Gunadarma University",
+    period: "2018 — 2022",
+    description:
+      "Teach computer science and information systems courses in Laboratory.",
+    accent: "accent",
   },
 ];
 
@@ -93,8 +101,8 @@ export type Project = {
 export const projects: Project[] = [
   {
     slug: "realtime-cdc-pipeline",
-    title: "Realtime CDC Pipeline",
-    category: "Streaming · Lakehouse",
+    title: "Big Data Streaming Pipeline",
+    category: "Pipeline · Data Engineering",
     description:
       "Debezium → Kafka → Iceberg lakehouse with sub-minute freshness powering 12+ downstream marts.",
     tags: ["Kafka", "Debezium", "Iceberg", "Spark"],
