@@ -134,6 +134,6 @@ export const getProject = (slug?: string) =>
 export const navLinks = [
   { label: "About", href: "/#about" },
   { label: "Experience", href: "/#experience" },
-  { label: "Work", href: "/#work" },
+  { label: "Projects", href: "/#work" },
   { label: "Contact", href: "/#contact" },
 ];

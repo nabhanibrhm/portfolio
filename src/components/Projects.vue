@@ -5,10 +5,16 @@ import { useReveal } from "../lib/useReveal";
 
 const rootEl = ref<HTMLElement | null>(null);
 useReveal(rootEl);
+
+// Accordion: index of the currently open project, or null when all closed.
+const openIdx = ref<number | null>(null);
+const toggle = (i: number) => {
+  openIdx.value = openIdx.value === i ? null : i;
+};
 </script>
 
 <template>
-  <section id="work" ref="rootEl" class="anchor-offset relative py-20 md:py-40">
+  <section id="work" ref="rootEl" class="anchor-offset relative py-16 md:py-24">
     <div class="shell">
       <div class="mb-10 flex items-baseline justify-between md:mb-14">
         <h2 class="eyebrow" data-reveal>(03) — Projects</h2>
@@ -19,12 +25,36 @@ useReveal(rootEl);
 
       <ul class="index-list">
         <li v-for="(p, i) in projects" :key="p.slug" data-reveal>
-          <a :href="`/work/${p.slug}`" class="index-row group">
+          <button
+            type="button"
+            class="index-row group"
+            :class="{ 'is-open': openIdx === i }"
+            :aria-expanded="openIdx === i"
+            :aria-controls="`project-panel-${i}`"
+            @click="toggle(i)"
+          >
             <span class="idx-num">0{{ i + 1 }}</span>
             <span class="idx-title">{{ p.title }}</span>
             <span class="idx-sub">{{ p.category }}</span>
-            <span class="idx-arrow" aria-hidden="true">↗</span>
-          </a>
+            <span class="idx-toggle" aria-hidden="true">+</span>
+          </button>
+
+          <!-- Expanding panel: grid-rows 0fr→1fr for a smooth, JS-free height reveal -->
+          <div
+            :id="`project-panel-${i}`"
+            class="panel"
+            :class="{ 'is-open': openIdx === i }"
+            role="region"
+          >
+            <div class="panel-inner">
+              <div class="panel-content">
+                <p class="panel-desc">{{ p.description }}</p>
+                <ul class="panel-tags">
+                  <li v-for="t in p.tags" :key="t" class="panel-tag">{{ t }}</li>
+                </ul>
+              </div>
+            </div>
+          </div>
         </li>
       </ul>
     </div>
@@ -35,17 +65,26 @@ useReveal(rootEl);
 .index-list {
   border-top: 1px solid rgb(var(--fg) / 0.1);
 }
+.index-list > li {
+  border-bottom: 1px solid rgb(var(--fg) / 0.1);
+}
 .index-row {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0.5rem 1.5rem;
+  width: 100%;
   padding: 1.75rem 0;
-  border-bottom: 1px solid rgb(var(--fg) / 0.1);
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
   transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 @media (hover: hover) {
-  .index-row:hover {
+  .index-row:not(.is-open):hover {
     transform: translateX(14px);
   }
 }
@@ -61,32 +100,88 @@ useReveal(rootEl);
   letter-spacing: -0.02em;
   transition: color 0.4s ease;
 }
-.index-row:hover .idx-title {
+.index-row:hover .idx-title,
+.index-row.is-open .idx-title {
   color: rgb(var(--accent));
 }
 .idx-sub {
   color: rgb(var(--fg-muted));
   margin-left: auto;
 }
-.idx-arrow {
-  font-size: 1.25rem;
+.idx-toggle {
+  font-size: 1.5rem;
+  line-height: 1;
   color: rgb(var(--fg-faint));
-  opacity: 0;
-  transform: translate(-8px, 4px);
   transition:
-    opacity 0.4s ease,
     transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
     color 0.4s ease;
 }
-.index-row:hover .idx-arrow {
-  opacity: 1;
-  transform: translate(0, 0);
+.index-row:hover .idx-toggle {
   color: rgb(var(--accent));
+}
+.index-row.is-open .idx-toggle {
+  transform: rotate(45deg);
+  color: rgb(var(--accent));
+}
+
+/* Collapsible panel — animate grid-template-rows for a measurement-free reveal */
+.panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.panel.is-open {
+  grid-template-rows: 1fr;
+}
+.panel-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+.panel-content {
+  display: grid;
+  gap: 1.5rem;
+  padding: 0 0 2rem 3.5rem;
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 0.4s ease 0.1s,
+    transform 0.4s ease 0.1s;
+}
+.panel.is-open .panel-content {
+  opacity: 1;
+  transform: translateY(0);
+}
+.panel-desc {
+  max-width: 46ch;
+  font-size: clamp(1rem, 1.6vw, 1.25rem);
+  line-height: 1.6;
+  color: rgb(var(--fg-muted));
+}
+.panel-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.panel-tag {
+  border: 1px solid rgb(var(--fg) / 0.15);
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
+  font-family: "Satoshi", ui-monospace, monospace;
+  font-size: 0.75rem;
+  color: rgb(var(--fg-muted));
+}
+@media (prefers-reduced-motion: reduce) {
+  .panel,
+  .panel-content,
+  .index-row,
+  .idx-toggle {
+    transition: none;
+  }
 }
 @media (max-width: 640px) {
   .index-row {
     display: grid;
-    grid-template-columns: 2rem 1fr;
+    grid-template-columns: 2rem 1fr auto;
     align-items: baseline;
     gap: 0.15rem 0.75rem;
     padding: 1.25rem 0;
@@ -105,8 +200,12 @@ useReveal(rootEl);
     grid-row: 2;
     margin-left: 0;
   }
-  .idx-arrow {
-    display: none;
+  .idx-toggle {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .panel-content {
+    padding-left: 2.75rem;
   }
 }
 </style>

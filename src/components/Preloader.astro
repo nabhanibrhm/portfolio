@@ -126,4 +126,15 @@ import { site } from "../data/site";
       tl.to(el, { autoAlpha: 0, duration: 0.6, ease: "power2.inOut" }, ">-0.2");
     }
   }
+
+  // The preloader is a `transition:persist` island, so this script runs only
+  // once (initial load) and never again on client-side navigation. Without
+  // this, navigating "home" via the wordmark could leave a persisted/fresh
+  // preloader on screen with no code to dismiss it — a stuck loader. Register
+  // a document-level safety (survives View Transitions) that force-hides it
+  // and releases the scroll lock after every swap.
+  document.addEventListener("astro:after-swap", () => {
+    document.getElementById("preloader")?.classList.add("is-hidden");
+    document.documentElement.classList.remove("is-loading");
+  });
 </script>

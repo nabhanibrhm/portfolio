@@ -11,7 +11,7 @@ useReveal(rootEl);
   <section
     id="about"
     ref="rootEl"
-    class="anchor-offset relative py-20 md:py-40"
+    class="anchor-offset relative py-16 md:py-24"
   >
     <div class="shell">
       <div class="mb-14 flex items-baseline justify-between md:mb-20">
