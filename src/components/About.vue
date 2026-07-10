@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { about, skills, site } from "../data/site";
+import { about, skills } from "../data/site";
 import { useReveal } from "../lib/useReveal";
+import MemojiDodge from "./MemojiDodge.vue";
 
 const rootEl = ref<HTMLElement | null>(null);
 useReveal(rootEl);
@@ -42,14 +43,7 @@ useReveal(rootEl);
             class="overflow-hidden rounded-3xl border border-foreground/10 bg-gradient-to-b from-background-soft to-background"
             data-reveal
           >
-            <img
-              src="/memoji-smile.webp"
-              alt="Luthfi Nabhan Ibrahim"
-              width="600"
-              height="800"
-              class="mx-auto h-72 w-auto object-contain p-6"
-              data-parallax="-0.08"
-            />
+            <MemojiDodge />
           </div>
 
           <div class="mt-8" data-reveal>
