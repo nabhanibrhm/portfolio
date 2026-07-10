@@ -18,7 +18,7 @@ export const about = {
   lead: "I design data systems that scale with the business.",
   body: [
     "Based in Jakarta, I build resilient data platforms, streaming pipelines, and cost-aware lakehouse infrastructure — pragmatic systems with observability baked in.",
-    "I care about the craft at both ends of the stack: the reliability of a streaming job at 3am, and the feel of an interface at 60fps. The occasional shader keeps things fun.",
+    "I also craft interactive dashboards and data visualizations that empower stakeholders to make informed decisions.",
   ],
 };
 
@@ -37,40 +37,54 @@ export const skills = [
   
 ];
 
-export type Accent = "accent" | "secondary";
-
 export type Experience = {
   role: string;
   company: string;
   period: string;
-  description: string;
-  accent: Accent;
+  /** A single paragraph, or an array of bullet points rendered as a list. */
+  description: string | string[];
 };
 
 export const experiences: Experience[] = [
   {
     role: "Data Engineer",
     company: "PT. Sinarmas Multiartha Tbk",
-    period: "2022 — Present",
-    description:
-      "Building data platforms, streaming pipelines, and cost-aware lakehouse infrastructure.",
-    accent: "accent",
+    period: "Jan 2022 — Present",
+    description: [
+      "Automated end-to-end ETL/ELT pipelines using Python, SQL, and Spark, managed via orchestration tools (Airflow, Dagster).",
+      "Maintained data dictionaries and technical documentation for all core data assets, ensuring strict data governance, transparency, and compliance.",
+      "Implemented data quality practices, including automated validation checks and error-monitoring workflows.",
+      "Helped develop and maintain interactive dashboards using Metabase, Tableau, and Power BI.",
+      "Collaborated on system specifications and technical workflows.",
+    ],
+  },
+  {
+    role: "Data Entry Intern",
+    company: "Incubator Business Center Gunadarma",
+    period: "Sep 2021 — Jan 2022",
+    description: [
+      "Provided assistance to the Health Center in using a new application.",
+      "Created piloting reports used as input for application development.",
+    ],
   },
   {
     role: "HRIS Intern",
     company: "PT. Global Tiket Network (tiket.com)",
-    period: "2020 — 2021",
-    description:
-      "Owned dbt models and the semantic layer powering self-serve analytics.",
-    accent: "secondary",
+    period: "Dec 2020 — Feb 2021",
+    description: [
+      "Managed and validated Human Resources (HR) data at tiket.com.",
+      "Cleaned and repaired tiket.com employee data.",
+      "Communicated and answered HRIS-related questions.",
+    ],
   },
-    {
+  {
     role: "Part Time Laboratory Assistant",
     company: "Gunadarma University",
-    period: "2018 — 2022",
-    description:
-      "Teach computer science and information systems courses in Laboratory.",
-    accent: "accent",
+    period: "Aug 2018 — Jan 2022",
+    description: [
+      "Instructed students in Python and MySQL at the Laboratory of Computer Science.",
+      "Collected and managed lab scores.",
+    ],
   },
 ];
 
@@ -89,47 +103,51 @@ export const education: Education[] = [
 ];
 
 export type Project = {
-  slug: string;
   title: string;
   category: string;
   description: string;
   tags: string[];
   href?: string;
-  accent: Accent;
 };
 
 export const projects: Project[] = [
   {
-    slug: "realtime-cdc-pipeline",
-    title: "Big Data Streaming Pipeline",
-    category: "Pipeline · Data Engineering",
+    title: "Big Data Pipeline",
+    category: "PT. Sinarmas Multiartha Tbk",
     description:
-      "Debezium → Kafka → Iceberg lakehouse with sub-minute freshness powering 12+ downstream marts.",
-    tags: ["Kafka", "Debezium", "Iceberg", "Spark"],
-    accent: "accent",
+      "Created a big data pipeline for processing and analyzing large-scale financial transactions using Python, Spark, Airflow, and Iceberg.",
+    tags: ["Python", "Airflow", "Iceberg", "Spark","PostgreSQL"],
   },
   {
-    slug: "self-serve-analytics",
-    title: "Self-serve Analytics Platform",
-    category: "Analytics Engineering",
+    title: "Antifraud System",
+    category: "PT. Sinarmas Multiartha Tbk",
     description:
-      "dbt + semantic layer + Metabase, with CI lineage gates that block breaking schema changes.",
-    tags: ["dbt", "BigQuery", "Metabase"],
-    accent: "secondary",
+      "Near real-time antifraud monitoring system with Python, Kafka, and Spark Streaming, SQL",
+    tags: ["Python", "Kafka", "Spark Structured Streaming", "Iceberg"],
   },
   {
-    slug: "cost-observability",
-    title: "Cost Observability Toolkit",
-    category: "FinOps · Observability",
+    title: "HRIS AI Chatbot",
+    category: "PT. Sinarmas Multiartha Tbk",
     description:
-      "Per-query attribution and budget alerting that cut warehouse spend ~38% over a quarter.",
-    tags: ["Snowflake", "Python", "Grafana"],
-    accent: "accent",
+      "AI-powered conversational interface for HRIS data access and employee support queries using LLM, Python, Java, and APIs.",
+    tags: ["Python", "LLM", "Java", "SQL"],
+  },
+  {
+    title: "PIKK Website",
+    category: "PT. Sinarmas Multiartha Tbk",
+    description:
+      "Frontend Engineer on PIKK Website platform — a multi-role Vue 3 / Vuetify 3 / Pinia web application for audit planning, findings, monitoring, and analytics with full Indonesian/English localization and light/dark theming. Shipped end-to-end features including an audit report generation module, full edit/delete workflows for audit findings and plan realizations with mandatory-reason capture and two-step delete confirmation, and a redesigned Internal Audit dashboard suite while resolving production defects, i18n and dark-mode issues, and dependency vulnerabilities.",
+    tags: ["Vue 3", "Vuetify 3", "Pinia", "JavaScript", "TypeScript"],
+  },
+  {
+    title: "RollingBike Telemetry Tracker",
+    category: "Personal Project",
+    description:
+      "An offline-first mobile app for cyclists that records rides in real time — live GPS map, moving-time and speed telemetry, and shareable post-ride summary cards. Built with Flutter and native Android (Kotlin) background services for continuous GPS tracking, backed by an on-device Isar database so it works fully offline.",
+    tags: ["Flutter", "Dart", "Kotlin", "Riverpod", "Isar", "flutter_map", "GPS Tracking"],
+    href: "https://github.com/nabhanibrhm/rollingbike",
   },
 ];
-
-export const getProject = (slug?: string) =>
-  projects.find((p) => p.slug === slug);
 
 export const navLinks = [
   { label: "About", href: "/#about" },

@@ -57,7 +57,10 @@ const toggle = (i: number) => {
           >
             <div class="panel-inner">
               <div class="panel-content">
-                <p class="panel-desc">{{ e.description }}</p>
+                <ul v-if="Array.isArray(e.description)" class="panel-list">
+                  <li v-for="(d, di) in e.description" :key="di">{{ d }}</li>
+                </ul>
+                <p v-else class="panel-desc">{{ e.description }}</p>
               </div>
             </div>
           </div>
@@ -163,10 +166,32 @@ const toggle = (i: number) => {
   transform: translateY(0);
 }
 .panel-desc {
-  max-width: 46ch;
+  max-width: none;
   font-size: clamp(1rem, 1.6vw, 1.25rem);
   line-height: 1.6;
   color: rgb(var(--fg-muted));
+}
+.panel-list {
+  display: grid;
+  gap: 0.6rem;
+  max-width: none;
+}
+.panel-list > li {
+  position: relative;
+  padding-left: 1.25rem;
+  font-size: clamp(1rem, 1.6vw, 1.25rem);
+  line-height: 1.55;
+  color: rgb(var(--fg-muted));
+}
+/* Accent tick as the bullet marker */
+.panel-list > li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.65em;
+  width: 0.5rem;
+  height: 1px;
+  background: rgb(var(--accent));
 }
 @media (prefers-reduced-motion: reduce) {
   .panel,
