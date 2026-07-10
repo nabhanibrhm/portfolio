@@ -5,7 +5,8 @@ Minimalist, Awwwards-leaning portfolio built with **Astro · Vue · Tailwind · 
 - Dark brand theme (`#181818` / `#F7F7F7`) with orange `#FF5722` + purple `#673AB7` accents
 - SPA-like page transitions (Astro View Transitions + GSAP fade/slide)
 - GSAP `ScrollTrigger` scroll reveals, parallax depth, Lenis smooth scroll
-- High-end gallery index for Experience & Work with cursor-tracked hover thumbnails
+- Expanding accordions for Experience & Projects — click a row to reveal its
+  description (bullet list or paragraph), tags, and an optional repo link
 
 ## Getting started
 
@@ -31,14 +32,13 @@ src/
     Header.astro        # fixed nav, offset anchor scroll, scrollspy, mobile menu
     Preloader.astro     # first-visit counter intro
     Hero.astro          # "Nabhan" highlighted, parallax orbs, masked intro
-    About.vue           # ScrollTrigger reveal
-    Experiences.vue     # gallery index + hover thumbnail
-    Projects.vue        # gallery index + hover cover, links to /work/[slug]
-    Contact.astro
-  lib/                  # gsap.ts, useReveal.ts, useHoverThumb.ts
+    About.vue           # ScrollTrigger reveal, toolkit chips
+    Experiences.vue     # accordion — expands to a bulleted list of highlights
+    Projects.vue        # accordion — expands to description, tags, optional repo link
+    Contact.astro       # social links + footer
+  lib/                  # gsap.ts, useReveal.ts
   pages/
-    index.astro
-    work/[slug].astro   # project detail (demonstrates route transitions)
+    index.astro         # single-page site
 ```
 
 Edit content in [`src/data/site.ts`](src/data/site.ts); brand tokens live in
