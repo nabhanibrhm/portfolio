@@ -42,7 +42,7 @@
 
   /* Light theme — toggled by adding `.light` to <html> (see Header + the
      no-flash init script in Layout.astro). Same palette inverted: warm-cream
-     surfaces, near-black text. Accent stays the same crimson. */
+     surfaces, near-black text. Accent inverts to a readable mid/dark grey. */
   html.light {
     --bg: 227 226 195; /* #e3e2c3 */
     --bg-soft: 239 238 221; /* lifted cream for elevated surfaces */
@@ -145,6 +145,160 @@
   [data-mask] > * {
     transform: translateY(110%);
     will-change: transform;
+  }
+}
+
+/* ----------------------------------------------------------------------------
+ * Index accordion — shared chrome for the Experience & Projects sections.
+ * The list/row/toggle/panel mechanics are identical between the two Vue
+ * components; only the panel *content* (bullet list vs. tags + repo link) is
+ * section-specific and stays in each component's scoped <style>. These class
+ * names are used solely by those two islands, so a single global definition is
+ * safe and keeps the two in lockstep. Scoped rules (higher specificity via
+ * Vue's [data-v] attribute) still win where a component overrides a base.
+ * -------------------------------------------------------------------------- */
+.index-list {
+  border-top: 1px solid rgb(var(--fg) / 0.1);
+}
+.index-list > li {
+  border-bottom: 1px solid rgb(var(--fg) / 0.1);
+}
+.index-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 1.5rem;
+  width: 100%;
+  padding: 1.75rem 0;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (hover: hover) {
+  .index-row:not(.is-open):hover {
+    transform: translateX(14px);
+  }
+}
+.idx-num {
+  width: 2rem;
+  font-family: "Satoshi", ui-monospace, monospace;
+  font-size: 0.8rem;
+  color: rgb(var(--fg-faint));
+}
+.idx-title {
+  font-size: clamp(1.5rem, 3.2vw, 2.5rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  transition: color 0.4s ease;
+}
+.index-row:hover .idx-title,
+.index-row.is-open .idx-title {
+  color: rgb(var(--accent));
+}
+.idx-sub {
+  color: rgb(var(--fg-muted));
+  margin-left: auto;
+}
+.idx-meta {
+  font-family: "Satoshi", ui-monospace, monospace;
+  font-size: 0.8rem;
+  color: rgb(var(--fg-faint));
+  min-width: 8.5rem;
+  text-align: right;
+}
+.idx-toggle {
+  font-size: 1.5rem;
+  line-height: 1;
+  color: rgb(var(--fg-faint));
+  transition:
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    color 0.4s ease;
+}
+.index-row:hover .idx-toggle {
+  color: rgb(var(--accent));
+}
+.index-row.is-open .idx-toggle {
+  transform: rotate(45deg);
+  color: rgb(var(--accent));
+}
+
+/* Collapsible panel — animate grid-template-rows for a measurement-free reveal */
+.panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.panel.is-open {
+  grid-template-rows: 1fr;
+}
+.panel-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+.panel-content {
+  padding: 0 0 2rem 3.5rem;
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 0.4s ease 0.1s,
+    transform 0.4s ease 0.1s;
+}
+.panel.is-open .panel-content {
+  opacity: 1;
+  transform: translateY(0);
+}
+.panel-desc {
+  max-width: none;
+  font-size: clamp(1rem, 1.6vw, 1.25rem);
+  line-height: 1.6;
+  color: rgb(var(--fg-muted));
+}
+@media (prefers-reduced-motion: reduce) {
+  .panel,
+  .panel-content,
+  .index-row,
+  .idx-toggle {
+    transition: none;
+  }
+}
+@media (max-width: 640px) {
+  .index-row {
+    display: grid;
+    grid-template-columns: 2rem 1fr auto;
+    align-items: baseline;
+    gap: 0.15rem 0.75rem;
+    padding: 1.25rem 0;
+  }
+  .idx-num {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .idx-title {
+    grid-column: 2;
+    grid-row: 1;
+    font-size: 1.5rem;
+  }
+  .idx-sub {
+    grid-column: 2;
+    grid-row: 2;
+    margin-left: 0;
+  }
+  .idx-meta {
+    grid-column: 2;
+    grid-row: 3;
+    min-width: 0;
+    text-align: left;
+  }
+  .idx-toggle {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .panel-content {
+    padding-left: 2.75rem;
   }
 }
 
