@@ -140,12 +140,12 @@ export const projects: Project[] = [
     tags: ["Vue 3", "Vuetify 3", "Pinia", "JavaScript", "TypeScript"],
   },
   {
-    title: "RollingBike Telemetry Tracker",
+    title: "ThrottlePath Telemetry Tracker",
     category: "Personal Project",
     description:
       "An offline-first mobile app for cyclists that records rides in real time — live GPS map, moving-time and speed telemetry, and shareable post-ride summary cards. Built with Flutter and native Android (Kotlin) background services for continuous GPS tracking, backed by an on-device Isar database so it works fully offline.",
     tags: ["Flutter", "Dart", "Kotlin", "Riverpod", "Isar", "flutter_map", "GPS Tracking"],
-    href: "https://github.com/nabhanibrhm/rollingbike",
+    href: "https://github.com/nabhanibrhm/throttlepath",
   },
 ];
 
