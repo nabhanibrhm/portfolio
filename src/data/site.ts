@@ -17,7 +17,7 @@ export const site = {
 export const about = {
   lead: "I design data systems that scale with the business.",
   body: [
-    "Based in Jakarta, I build resilient data platforms, streaming pipelines, and cost-aware lakehouse infrastructure — pragmatic systems with observability baked in.",
+    "Based in Bekasi, I build resilient data platforms, streaming pipelines, and cost-aware lakehouse infrastructure — pragmatic systems with observability baked in.",
     "I also craft interactive dashboards and data visualizations that empower stakeholders to make informed decisions.",
   ],
 };

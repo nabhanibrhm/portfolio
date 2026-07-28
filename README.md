@@ -2,11 +2,13 @@
 
 Minimalist, Awwwards-leaning portfolio built with **Astro · Vue · Tailwind · GSAP**.
 
-- Dark brand theme (`#181818` / `#F7F7F7`) with orange `#FF5722` + purple `#673AB7` accents
+- Warm monochrome theme (near-black `#141413` ⇄ cream `#e3e2c3`) with a tonal
+  sage accent; light/dark toggle persisted in `localStorage` (no flash on load)
 - SPA-like page transitions (Astro View Transitions + GSAP fade/slide)
 - GSAP `ScrollTrigger` scroll reveals, parallax depth, Lenis smooth scroll
 - Expanding accordions for Experience & Projects — click a row to reveal its
   description (bullet list or paragraph), tags, and an optional repo link
+- A tap-to-play canvas mini-game tucked into the About portrait (`MemojiDodge`)
 
 ## Getting started
 
@@ -31,8 +33,8 @@ src/
   components/
     Header.astro        # fixed nav, offset anchor scroll, scrollspy, mobile menu
     Preloader.astro     # first-visit counter intro
-    Hero.astro          # "Nabhan" highlighted, parallax orbs, masked intro
-    About.vue           # ScrollTrigger reveal, toolkit chips
+    Hero.astro          # masked grid backdrop, bouncing memoji, tagline + CTA
+    About.vue           # ScrollTrigger reveal, toolkit chips, MemojiDodge game
     Experiences.vue     # accordion — expands to a bulleted list of highlights
     Projects.vue        # accordion — expands to description, tags, optional repo link
     Contact.astro       # social links + footer

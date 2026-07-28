@@ -89,42 +89,39 @@ import { site } from "../data/site";
 
   const el = document.getElementById("preloader");
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const seen = false; // always show the loader (was: sessionStorage "pl-seen" gate)
 
-  if (!el || reduce || seen) {
+  // The loader plays on every load; reduced-motion skips straight to content.
+  if (!el || reduce) {
     el?.classList.add("is-hidden");
     document.documentElement.classList.remove("is-loading");
     finish();
   } else {
-    {
-      sessionStorage.setItem("pl-seen", "1");
-      document.documentElement.classList.add("is-loading");
+    document.documentElement.classList.add("is-loading");
 
-      const num = document.getElementById("pl-num");
-      const bar = document.getElementById("pl-bar");
-      const state = { v: 0 };
+    const num = document.getElementById("pl-num");
+    const bar = document.getElementById("pl-bar");
+    const state = { v: 0 };
 
-      const tl = gsap.timeline({
-        onComplete: () => {
-          document.documentElement.classList.remove("is-loading");
-          el.classList.add("is-hidden");
-          finish();
-        },
-      });
+    const tl = gsap.timeline({
+      onComplete: () => {
+        document.documentElement.classList.remove("is-loading");
+        el.classList.add("is-hidden");
+        finish();
+      },
+    });
 
-      tl.to(state, {
-        v: 100,
-        duration: 3,
-        ease: "power2.inOut",
-        onUpdate: () => {
-          const v = Math.round(state.v);
-          if (num) num.textContent = String(v).padStart(2, "0");
-          if (bar) (bar as HTMLElement).style.width = v + "%";
-        },
-      });
-      tl.to(".pl-fade", { autoAlpha: 0, y: -10, duration: 2, ease: "power2.out" }, "+=0.15");
-      tl.to(el, { autoAlpha: 0, duration: 0.6, ease: "power2.inOut" }, ">-0.2");
-    }
+    tl.to(state, {
+      v: 100,
+      duration: 3,
+      ease: "power2.inOut",
+      onUpdate: () => {
+        const v = Math.round(state.v);
+        if (num) num.textContent = String(v).padStart(2, "0");
+        if (bar) (bar as HTMLElement).style.width = v + "%";
+      },
+    });
+    tl.to(".pl-fade", { autoAlpha: 0, y: -10, duration: 2, ease: "power2.out" }, "+=0.15");
+    tl.to(el, { autoAlpha: 0, duration: 0.6, ease: "power2.inOut" }, ">-0.2");
   }
 
   // The preloader is a `transition:persist` island, so this script runs only
