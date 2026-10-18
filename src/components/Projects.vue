@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { projects } from "../data/site";
 import { useReveal } from "../lib/useReveal";
 
@@ -11,6 +11,17 @@ const openIdx = ref<number | null>(null);
 const toggle = (i: number) => {
   openIdx.value = openIdx.value === i ? null : i;
 };
+
+// Demo videos play only while their row is open, so closed rows cost nothing
+// (preload="none") and a collapsed video never keeps running off-screen.
+const videoEls: Record<number, HTMLVideoElement | null> = {};
+const setVideoEl = (i: number) => (el: unknown) => {
+  videoEls[i] = el as HTMLVideoElement | null;
+};
+watch(openIdx, (open, prev) => {
+  if (prev != null) videoEls[prev]?.pause();
+  if (open != null) videoEls[open]?.play().catch(() => {});
+});
 </script>
 
 <template>
@@ -48,6 +59,18 @@ const toggle = (i: number) => {
           >
             <div class="panel-inner">
               <div class="panel-content">
+                <video
+                  v-if="p.video"
+                  :ref="setVideoEl(i)"
+                  class="panel-video"
+                  :src="p.video.src"
+                  :poster="p.video.poster"
+                  preload="none"
+                  muted
+                  loop
+                  playsinline
+                  controls
+                ></video>
                 <p class="panel-desc">{{ p.description }}</p>
                 <ul class="panel-tags">
                   <li v-for="t in p.tags" :key="t" class="panel-tag">{{ t }}</li>
@@ -82,6 +105,15 @@ const toggle = (i: number) => {
 .panel-content {
   display: grid;
   gap: 1.5rem;
+}
+.panel-video {
+  display: block;
+  width: 100%;
+  max-width: 960px;
+  aspect-ratio: 16 / 9;
+  border: 1px solid rgb(var(--fg) / 0.15);
+  border-radius: 12px;
+  background: #121212;
 }
 .panel-tags {
   display: flex;

@@ -108,6 +108,8 @@ export type Project = {
   description: string;
   tags: string[];
   href?: string;
+  /** Optional demo video (files in /public), played when the row is opened. */
+  video?: { src: string; poster: string };
 };
 
 export const projects: Project[] = [
@@ -140,12 +142,16 @@ export const projects: Project[] = [
     tags: ["Vue 3", "Vuetify 3", "Pinia", "JavaScript", "TypeScript"],
   },
   {
-    title: "ThrottlePath Telemetry Tracker",
+    title: "ThrottlePath Ride Telemetry",
     category: "Personal Project",
     description:
-      "An offline-first mobile app for cyclists that records rides in real time — live GPS map, moving-time and speed telemetry, and shareable post-ride summary cards. Built with Flutter and native Android (Kotlin) background services for continuous GPS tracking, backed by an on-device Isar database so it works fully offline.",
+      "An offline-first motorcycle ride tracker that records rides in real time — live GPS map, speed dial, moving-time and lean-angle telemetry, ride history with multi-stint trips, per-ride analysis (speed zones, smoothness, lean, elevation), and shareable summary cards. Built with Flutter and native Android (Kotlin) background services for continuous raw-GNSS tracking that survives lock and sleep, backed by an on-device Isar database so it works fully offline.",
     tags: ["Flutter", "Dart", "Kotlin", "Riverpod", "Isar", "flutter_map", "GPS Tracking"],
     href: "https://github.com/nabhanibrhm/throttlepath",
+    video: {
+      src: "/videos/throttlepath-promo.mp4",
+      poster: "/videos/throttlepath-promo-poster.jpg",
+    },
   },
 ];
 
