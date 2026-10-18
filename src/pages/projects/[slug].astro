@@ -1,0 +1,304 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Footer from "../../components/Footer.astro";
+import { projectNumber, projects, site } from "../../data/site";
+import type { Project } from "../../data/site";
+
+export function getStaticPaths() {
+  return projects
+    .map((project, index) => ({ project, index }))
+    .filter(({ project }) => project.slug && project.detail)
+    .map(({ project, index }) => ({
+      params: { slug: project.slug as string },
+      props: { project, index },
+    }));
+}
+
+interface Props {
+  project: Project;
+  index: number;
+}
+
+const { project, index } = Astro.props;
+const detail = project.detail!;
+const slug = project.slug!;
+const num = projectNumber(index);
+const next = projects[(index + 1) % projects.length];
+const nextNum = projectNumber((index + 1) % projects.length);
+
+// h1: first word on line one, the rest on line two, last word in the accent
+const words = project.title.split(" ");
+const line1 = words.length > 1 ? words[0] : project.title;
+const line2Words = words.length > 1 ? words.slice(1) : [];
+const line2Last = line2Words.pop();
+
+const meta = [
+  { label: "Type", value: detail.type },
+  project.year ? { label: "Year", value: project.year } : null,
+  { label: "Platform", value: detail.platform },
+  { label: "Stack", value: detail.metaStack.join(" · ") },
+].filter((m): m is { label: string; value: string } => m !== null);
+
+const apk = project.links?.find((l) => l.kind === "apk");
+const repo = project.links?.find((l) => l.kind === "repo");
+const description = project.summary ?? detail.overview;
+---
+
+<Layout
+  title={`${project.title} — ${site.name}`}
+  description={description}
+  headerVariant="project"
+>
+  <div id="project-page" class="wrap pt-20">
+    <!-- Breadcrumb -->
+    <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 border-b border-line pb-6" data-reveal>
+      <span class="mono whitespace-nowrap text-mute">(03) — Projects / {num}</span>
+      <span class="mono whitespace-nowrap text-mute">{detail.type}</span>
+    </div>
+
+    <!-- Title -->
+    <h1
+      class="mt-16 text-[clamp(52px,9.4vw,144px)] font-medium leading-[0.9] tracking-[-0.055em]"
+      data-vt-title
+      transition:name={`${slug}-title`}
+    >
+      <span class="block -mb-[0.06em] pb-[0.14em] pt-[0.03em]" data-mask>
+        <span class="block">{line1}</span>
+      </span>
+      {
+        line2Last && (
+          <span class="block -mb-[0.06em] pb-[0.14em] pt-[0.03em]" data-mask>
+            <span class="block">
+              {line2Words.length > 0 && `${line2Words.join(" ")} `}
+              <span class="acc">{line2Last}</span>
+            </span>
+          </span>
+        )
+      }
+    </h1>
+
+    <!-- Meta strip -->
+    <dl
+      class="meta m-0 mt-16 grid grid-cols-2 gap-6 border-y border-line py-6 min-[860px]:[grid-template-columns:repeat(var(--cols),minmax(0,1fr))]"
+      style={`--cols:${meta.length}`}
+      data-reveal
+    >
+      {
+        meta.map((m) => (
+          <div class="flex min-w-0 flex-col gap-2.5">
+            <dt class="mono text-mute">{m.label}</dt>
+            <dd class="m-0 text-base">{m.value}</dd>
+          </div>
+        ))
+      }
+    </dl>
+
+    <!-- Demo video. Not inside a data-reveal wrapper: it is the shared element
+         of the card -> page morph, so it must be visible when the page lands. -->
+    <figure
+      transition:name={`${slug}-media`}
+      data-vt-morph
+      class="relative m-0 mt-12 aspect-video overflow-hidden rounded-2xl border border-line bg-tile"
+    >
+      <video
+        id="project-video"
+        src={detail.video.src}
+        poster={detail.video.poster}
+        controls
+        muted
+        playsinline
+        preload="none"
+        aria-label={`${project.title} demo video`}
+        class="h-full w-full object-cover"></video>
+      <noscript>
+        <a
+          href={detail.video.src}
+          class="mono absolute bottom-6 left-7 rounded-full border border-line bg-background px-3 py-1.5"
+        >
+          Open demo video
+        </a>
+      </noscript>
+      <span
+        data-play-hide
+        class="mono pointer-events-none absolute left-7 top-7 flex items-center gap-2.5 rounded-full border border-line bg-background px-3 py-1.5"
+      >
+        <span class="live h-2 w-2 rounded-full bg-accent" aria-hidden="true"></span>
+        Demo video
+      </span>
+      <button
+        type="button"
+        data-play
+        hidden
+        aria-label="Play demo video"
+        class="btn absolute left-1/2 top-1/2 -ml-10 -mt-10 h-20 w-20 cursor-pointer items-center justify-center rounded-full border-0 bg-accent text-accent-on [&:not([hidden])]:inline-flex"
+      >
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M8 5.5v13l11-6.5z"></path>
+        </svg>
+      </button>
+    </figure>
+
+    <!-- Overview -->
+    <section aria-labelledby="ov-h" class="grid gap-12 pt-[120px] min-[860px]:grid-cols-[1fr_2fr]" data-reveal>
+      <h2 id="ov-h" class="mono m-0 text-mute">Overview</h2>
+      <p class="m-0 text-[clamp(22px,2.2vw,30px)] leading-[1.35] tracking-[-0.02em]">
+        {detail.overview}
+      </p>
+    </section>
+
+    <!-- What it does -->
+    <section aria-labelledby="ft-h" class="grid gap-12 pt-[120px] min-[860px]:grid-cols-[1fr_2fr]" data-reveal>
+      <h2 id="ft-h" class="mono m-0 text-mute">What it does</h2>
+      <ol class="m-0 list-none border-b border-line p-0">
+        {
+          detail.features.map((f, i) => (
+            <li class="grid grid-cols-[64px_minmax(0,1fr)] border-t border-line py-[22px] text-xl tracking-[-0.01em]">
+              <span class="mono pt-1.5 text-mute">{String(i + 1).padStart(2, "0")}</span>
+              {f}
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    <!-- Stack & links -->
+    <section aria-labelledby="st-h" class="grid gap-12 pt-[120px] min-[860px]:grid-cols-[1fr_2fr]" data-reveal>
+      <h2 id="st-h" class="mono m-0 text-mute">Stack &amp; links</h2>
+      <div class="flex flex-col gap-8">
+        {
+          project.stack && project.stack.length > 0 && (
+            <ul class="m-0 flex list-none flex-wrap gap-2 p-0">
+              {project.stack.map((t) => (
+                <li class="rounded-full border border-chip px-4 py-2 text-sm">{t}</li>
+              ))}
+            </ul>
+          )
+        }
+        {
+          (apk || repo) && (
+            <div class="flex flex-wrap gap-4">
+              {apk && (
+                <a
+                  href={apk.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-magnetic
+                  class="btn inline-flex h-[52px] items-center gap-2.5 rounded-full bg-accent px-6 text-[15px] font-medium text-accent-on"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 4v12M6 11l6 6 6-6M5 20h14" />
+                  </svg>
+                  {apk.label}
+                </a>
+              )}
+              {repo && (
+                <a
+                  href={repo.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="btn inline-flex h-[52px] items-center gap-2.5 rounded-full border border-chip px-6 text-[15px]"
+                >
+                  {repo.label} <span aria-hidden="true">↗</span>
+                </a>
+              )}
+            </div>
+          )
+        }
+      </div>
+    </section>
+
+    <!-- Next project -->
+    <a
+      href="/#projects"
+      data-nav
+      class="next mt-40 flex items-end justify-between gap-6 border-y border-line py-10"
+      data-reveal
+    >
+      <span class="flex flex-col gap-4">
+        <span class="mono text-mute">Next project · {nextNum}</span>
+        <span class="text-[clamp(40px,6vw,88px)] font-medium leading-[0.95] tracking-[-0.05em]">
+          {next.title}
+        </span>
+      </span>
+      <span
+        class="arr inline-flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-accent text-accent-on"
+        aria-hidden="true"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14M13 6l6 6-6 6" />
+        </svg>
+      </span>
+    </a>
+  </div>
+
+  <Footer variant="project" />
+</Layout>
+
+<style>
+  .next .arr {
+    transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .next:hover .arr,
+  .next:focus-visible .arr {
+    transform: translateX(12px);
+  }
+</style>
+
+<script>
+  import { gsap, ScrollTrigger } from "../../lib/gsap";
+  import { MASK, REVEAL, trigger } from "../../lib/motion";
+  import { onPageLoad } from "../../lib/page";
+  import { guard } from "../../lib/reveal";
+
+  // --- Big play button: starts the clip, then gets out of the way -----------
+  function initPlayer() {
+    const video = document.getElementById("project-video") as HTMLVideoElement | null;
+    const btn = document.querySelector<HTMLButtonElement>("[data-play]");
+    if (!video || !btn) return;
+    video.load(); // see Projects.astro: router-swapped videos need a fresh load
+    // Native controls are server-rendered so the clip stays playable if JS is
+    // broken; with JS they are swapped for the big play button until first play.
+    video.controls = false;
+    const hideEls = document.querySelectorAll<HTMLElement>("[data-play-hide]");
+    // JS is available, so the overlay can be offered (it stays hidden without JS,
+    // where the native controls are the way to play).
+    btn.hidden = false;
+
+    const setPlaying = (playing: boolean) => {
+      btn.hidden = playing;
+      hideEls.forEach((el) => (el.style.display = playing ? "none" : ""));
+    };
+    // Native controls appear only once playback is started from the overlay, so
+    // they never sit underneath the big play button.
+    btn.addEventListener("click", () => {
+      video.controls = true;
+      video.play().catch(() => {});
+      video.focus({ preventScroll: true }); // keyboard users land on the native controls
+    });
+    video.addEventListener("play", () => setPlaying(true));
+    video.addEventListener("ended", () => setPlaying(false));
+  }
+
+  // --- Reveals: h1 lines unmask, sections fade up as they enter ------------
+  function initReveals() {
+    guard("project-page", (page) => {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const lines = page.querySelectorAll<HTMLElement>("[data-mask] > *");
+      const items = page.querySelectorAll<HTMLElement>("[data-reveal]");
+      gsap.fromTo(lines, MASK.from, { ...MASK.to, stagger: MASK.stagger });
+      items.forEach((el) => {
+        gsap.fromTo(el, REVEAL.from, { ...REVEAL.to, scrollTrigger: trigger(el, "top 90%") });
+      });
+      ScrollTrigger.refresh();
+    });
+  }
+
+  function init() {
+    initPlayer();
+    // Same gate as the hero: wait for the preloader on a cold load
+    if ((window as any).__preloaded) initReveals();
+    else window.addEventListener("preloader:done", initReveals, { once: true });
+  }
+
+  onPageLoad("project-page", init);
+</script>

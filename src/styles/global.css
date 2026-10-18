@@ -13,56 +13,96 @@
   font-display: swap;
 }
 
+/* Geist Mono (SIL OFL 1.1, licence in /fonts/GeistMono-OFL.txt) — variable
+   100–900, used ONLY for small uppercase metadata labels (.mono). */
+@font-face {
+  font-family: "Geist Mono";
+  src: url("/fonts/GeistMono-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Metric-matched fallbacks: while the real faces load (preloaded + font-display:
+   swap) the system font is sized/spaced like them, so swapping causes ~no layout
+   shift. Metrics measured from the font files vs Arial / Courier New. */
+@font-face {
+  font-family: "Satoshi Fallback";
+  src: local("Arial"), local("Helvetica Neue"), local("Helvetica"), local("Liberation Sans");
+  size-adjust: 108.6%;
+  ascent-override: 93%;
+  descent-override: 22.1%;
+  line-gap-override: 9.2%;
+}
+@font-face {
+  font-family: "Geist Mono Fallback";
+  src: local("Courier New"), local("Liberation Mono"), local("Menlo");
+  size-adjust: 100%;
+  ascent-override: 100.5%;
+  descent-override: 29.5%;
+  line-gap-override: 0%;
+}
+
 @layer base {
   :root {
-    --header-h: 6rem; /* fixed-header height → drives anchor scroll offset */
+    --header-h: 72px; /* sticky-header height → drives anchor scroll offset */
 
-    /* Monochrome accent — tonal, drawn from the same warm-grey palette (no
-       separate hue). Stored as RGB triples like the neutrals so Tailwind's
-       rgb(var() / <alpha-value>) tokens + scoped rgb(var(--accent)) both work.
-       Dark default: sage accent reads against the near-black surfaces. */
-    --accent: 193 193 169; /* #c1c1a9 sage */
-    --accent-soft: 227 226 195; /* #e3e2c3 */
-    --accent-deep: 139 138 135; /* #8b8a87 — hover/pressed */
-    --secondary: 139 138 135; /* #8b8a87 */
-    --secondary-soft: 193 193 169; /* #c1c1a9 */
-    --secondary-deep: 106 106 103; /* #6a6a67 */
+    /* Three-colour palette: black #000000, amber #FCA311, white #FFFFFF.
+       Every variable below is one of those three or a straight mix of them
+       (no other hue). Stored as space-separated RGB triples so Tailwind's
+       rgb(var() / <alpha-value>) tokens + scoped rgb(var(--x)) both work.
+       Default = dark: black surfaces, white text, amber accent. */
+    --bg: 0 0 0; /* #000000 black */
+    --bg-soft: 13 13 13; /* #0D0D0D — black ~5% toward white */
+    --bg-elevated: 26 26 26; /* #1A1A1A — black ~10% toward white */
+    --fg: 255 255 255; /* #FFFFFF white */
+    --fg-muted: 163 163 163; /* #A3A3A3 (= --mute) */
+    --fg-faint: 140 140 140; /* #8C8C8C — white ~55% over black (>=5.2:1 on every surface) */
 
-    /* Warm dark-grey palette (octet.design) as space-separated RGB triples,
-       consumed by Tailwind's rgb(var() / <alpha-value>) tokens and scoped
-       styles. Default = dark: near-black surfaces, warm-cream text.
-       #141413 #272727 #6a6a67 #8b8a87 #c1c1a9 #e3e2c3 */
-    --bg: 20 20 19; /* #141413 */
-    --bg-soft: 29 29 27; /* between #141413 and #272727 */
-    --bg-elevated: 39 39 39; /* #272727 */
-    --fg: 227 226 195; /* #e3e2c3 */
-    --fg-muted: 193 193 169; /* #c1c1a9 */
-    --fg-faint: 139 138 135; /* #8b8a87 */
+    --accent: 252 163 17; /* #FCA311 amber */
+    --accent-soft: 253 191 90; /* #FDBF5A — amber ~30% toward white */
+    --accent-deep: 201 127 6; /* #C97F06 — amber ~20% toward black, hover/pressed */
+    --on-accent: 0 0 0; /* #000000 — text on amber fills; black in BOTH themes (white on amber is 2:1) */
+
+    /* Redesign tokens (plain colours — consumed as var(--x) by Tailwind tokens
+       line / chip / tile / ghost / ring, and by .acc / .mono helpers). */
+    --mute: #a3a3a3; /* secondary text (matches --fg-muted) */
+    --line: rgba(255, 255, 255, 0.14); /* hairlines */
+    --chip: rgba(255, 255, 255, 0.38); /* chip / tag + outline-button borders (>= 3:1 on #000 and #0A0A0A) */
+    --tile: #0a0a0a; /* bento / card surface */
+    --ghost: rgba(255, 255, 255, 0.07); /* oversized faint wordmark */
+    --accText: #fca311; /* amber text — fine on black */
+    --accDeco: none;
+    --ring: #fca311; /* focus ring */
   }
 
   /* Light theme — toggled by adding `.light` to <html> (see Header + the
-     no-flash init script in Layout.astro). Same palette inverted: warm-cream
-     surfaces, near-black text. Accent inverts to a readable mid/dark grey. */
+     no-flash init script in Layout.astro). Same three colours, roles swapped:
+     white surfaces, black text. Amber accent is unchanged. */
   html.light {
-    --bg: 227 226 195; /* #e3e2c3 */
-    --bg-soft: 239 238 221; /* lifted cream for elevated surfaces */
-    --bg-elevated: 193 193 169; /* #c1c1a9 */
-    --fg: 20 20 19; /* #141413 */
-    --fg-muted: 39 39 39; /* #272727 */
-    --fg-faint: 106 106 103; /* #6a6a67 */
+    --bg: 255 255 255; /* #FFFFFF white */
+    --bg-soft: 245 245 245; /* #F5F5F5 — white ~4% toward black */
+    --bg-elevated: 235 235 235; /* #EBEBEB — white ~8% toward black */
+    --fg: 0 0 0; /* #000000 black */
+    --fg-muted: 89 89 89; /* #595959 (= --mute) */
+    --fg-faint: 102 102 102; /* #666666 — black ~60% over white (>=4.8:1 on every surface) */
+    /* accent family + --on-accent are theme-independent (see :root). */
 
-    /* Light: accent inverts to a readable mid/dark grey on the cream surface. */
-    --accent: 106 106 103; /* #6a6a67 */
-    --accent-soft: 139 138 135; /* #8b8a87 */
-    --accent-deep: 39 39 39; /* #272727 — hover/pressed */
-    --secondary: 106 106 103; /* #6a6a67 */
-    --secondary-soft: 139 138 135; /* #8b8a87 */
-    --secondary-deep: 39 39 39; /* #272727 */
+    --mute: #595959;
+    --line: rgba(0, 0, 0, 0.12);
+    --chip: rgba(0, 0, 0, 0.46); /* >= 3:1 on #FFF and #F5F5F5 */
+    --tile: #f5f5f5;
+    --ghost: rgba(0, 0, 0, 0.06);
+    /* Amber text is ~2:1 on white, so in light mode it becomes black text with
+       an amber underline (see .acc). */
+    --accText: #000000;
+    --accDeco: underline #fca311 0.09em;
+    --ring: #000000;
   }
 
   html {
     scroll-behavior: smooth; /* native fallback when Lenis is disabled */
-    scroll-padding-top: var(--header-h); /* offset #anchors under the fixed header */
+    scroll-padding-top: var(--header-h); /* offset #anchors under the sticky header */
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
@@ -79,9 +119,33 @@
     height: 100%;
   }
 
+  /* Global keyboard focus ring (amber on black, black on white) */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 4px;
+  }
+
+  /* Skip link: first focusable element, visible only while focused */
+  .skip-link {
+    position: fixed;
+    left: 16px;
+    top: 12px;
+    z-index: 200;
+    transform: translateY(-250%);
+    padding: 12px 20px;
+    border-radius: 999px;
+    background: rgb(var(--accent));
+    color: rgb(var(--on-accent));
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .skip-link:focus {
+    transform: none;
+  }
+
   ::selection {
     background: color-mix(in oklab, rgb(var(--accent)) 70%, transparent);
-    color: rgb(var(--bg));
+    color: rgb(var(--on-accent));
   }
 
   /* Lenis smooth-scroll hooks */
@@ -101,28 +165,73 @@
 }
 
 @layer components {
-  .shell {
-    @apply mx-auto w-full max-w-shell px-6 md:px-10;
+  /* Mono metadata label — small, uppercase, wide-tracked (Geist Mono only here) */
+  .mono {
+    font-family: "Geist Mono", "Geist Mono Fallback", ui-monospace, SFMono-Regular, Menlo, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 11px;
+    font-weight: 400;
   }
-  .eyebrow {
-    @apply font-mono text-xs uppercase tracking-kicker text-foreground-faint;
+  /* Accent text: amber on dark; black + amber underline on light (readable) */
+  .acc {
+    color: var(--accText);
+    text-decoration: var(--accDeco);
+    text-underline-offset: 0.1em;
+    text-decoration-skip-ink: none;
   }
-  /* Animated underline used on inline links */
-  .link-underline {
-    @apply relative inline-block;
+  /* Underline-draw hover: a 1px amber line grows from the left.
+     .ul.on = always-on line in the foreground colour, amber on hover. */
+  .ul {
+    position: relative;
+    display: inline-block;
   }
-  .link-underline::after {
+  .ul::after {
     content: "";
-    @apply absolute -bottom-0.5 left-0 h-px w-full origin-right scale-x-0 bg-accent transition-transform duration-500 ease-smooth;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -3px;
+    height: 1px;
+    background: rgb(var(--accent));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
   }
-  .link-underline:hover::after {
-    @apply origin-left scale-x-100;
+  .ul:hover::after,
+  .ul:focus-visible::after {
+    transform: scaleX(1);
+  }
+  .ul.on::after {
+    transform: scaleX(1);
+    background: rgb(var(--fg));
+  }
+  .ul.on:hover::after {
+    background: rgb(var(--accent));
+  }
+  /* Page gutter: 1440 max, 40px sides (16px under 860px) */
+  .wrap {
+    margin-inline: auto;
+    width: 100%;
+    max-width: 1440px;
+    padding-inline: 16px;
+  }
+  @media (min-width: 860px) {
+    .wrap {
+      padding-inline: 40px;
+    }
   }
 }
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  /* Filled-pill / outline buttons lift 2px on hover */
+  .btn {
+    transition:
+      transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1),
+      translate 0.25s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .btn:hover {
+    transform: translateY(-2px);
   }
   .anchor-offset {
     scroll-margin-top: var(--header-h);
@@ -135,170 +244,29 @@
  * state. A <noscript> rule in Layout.astro reveals everything if JS is off.
  * -------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: no-preference) {
-  [data-reveal] {
+  /* Only while the reveal gate is on (`html.reveal-on`, set by the inline head
+     script and dropped if GSAP never loads): without it content simply renders. */
+  html.reveal-on [data-reveal] {
     opacity: 0;
   }
   /* "Unmask" wrappers: child slides up from behind a clipped edge */
-  [data-mask] {
+  html.reveal-on [data-mask] {
     overflow: hidden;
   }
-  [data-mask] > * {
+  html.reveal-on [data-mask] > * {
     transform: translateY(110%);
     will-change: transform;
   }
 }
 
-/* ----------------------------------------------------------------------------
- * Index accordion — shared chrome for the Experience & Projects sections.
- * The list/row/toggle/panel mechanics are identical between the two Vue
- * components; only the panel *content* (bullet list vs. tags + repo link) is
- * section-specific and stays in each component's scoped <style>. These class
- * names are used solely by those two islands, so a single global definition is
- * safe and keeps the two in lockstep. Scoped rules (higher specificity via
- * Vue's [data-v] attribute) still win where a component overrides a base.
- * -------------------------------------------------------------------------- */
-.index-list {
-  border-top: 1px solid rgb(var(--fg) / 0.1);
-}
-.index-list > li {
-  border-bottom: 1px solid rgb(var(--fg) / 0.1);
-}
-.index-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.5rem 1.5rem;
-  width: 100%;
-  padding: 1.75rem 0;
-  background: none;
-  border: none;
-  text-align: left;
-  cursor: pointer;
-  color: inherit;
-  font: inherit;
-  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-}
-@media (hover: hover) {
-  .index-row:not(.is-open):hover {
-    transform: translateX(14px);
-  }
-}
-.idx-num {
-  width: 2rem;
-  font-family: "Satoshi", ui-monospace, monospace;
-  font-size: 0.8rem;
-  color: rgb(var(--fg-faint));
-}
-.idx-title {
-  font-size: clamp(1.5rem, 3.2vw, 2.5rem);
-  font-weight: 500;
-  letter-spacing: -0.02em;
-  transition: color 0.4s ease;
-}
-.index-row:hover .idx-title,
-.index-row.is-open .idx-title {
-  color: rgb(var(--accent));
-}
-.idx-sub {
-  color: rgb(var(--fg-muted));
-  margin-left: auto;
-}
-.idx-meta {
-  font-family: "Satoshi", ui-monospace, monospace;
-  font-size: 0.8rem;
-  color: rgb(var(--fg-faint));
-  min-width: 8.5rem;
-  text-align: right;
-}
-.idx-toggle {
-  font-size: 1.5rem;
-  line-height: 1;
-  color: rgb(var(--fg-faint));
-  transition:
-    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-    color 0.4s ease;
-}
-.index-row:hover .idx-toggle {
-  color: rgb(var(--accent));
-}
-.index-row.is-open .idx-toggle {
-  transform: rotate(45deg);
-  color: rgb(var(--accent));
-}
-
-/* Collapsible panel — animate grid-template-rows for a measurement-free reveal */
-.panel {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.panel.is-open {
-  grid-template-rows: 1fr;
-}
-.panel-inner {
-  overflow: hidden;
-  min-height: 0;
-}
-.panel-content {
-  padding: 0 0 2rem 3.5rem;
-  opacity: 0;
-  transform: translateY(8px);
-  transition:
-    opacity 0.4s ease 0.1s,
-    transform 0.4s ease 0.1s;
-}
-.panel.is-open .panel-content {
-  opacity: 1;
-  transform: translateY(0);
-}
-.panel-desc {
-  max-width: none;
-  font-size: clamp(1rem, 1.6vw, 1.25rem);
-  line-height: 1.6;
-  color: rgb(var(--fg-muted));
-}
+/* Respect reduced motion everywhere: no CSS transitions / animations / smooth scroll */
 @media (prefers-reduced-motion: reduce) {
-  .panel,
-  .panel-content,
-  .index-row,
-  .idx-toggle {
-    transition: none;
-  }
-}
-@media (max-width: 640px) {
-  .index-row {
-    display: grid;
-    grid-template-columns: 2rem 1fr auto;
-    align-items: baseline;
-    gap: 0.15rem 0.75rem;
-    padding: 1.25rem 0;
-  }
-  .idx-num {
-    grid-column: 1;
-    grid-row: 1;
-  }
-  .idx-title {
-    grid-column: 2;
-    grid-row: 1;
-    font-size: 1.5rem;
-  }
-  .idx-sub {
-    grid-column: 2;
-    grid-row: 2;
-    margin-left: 0;
-  }
-  .idx-meta {
-    grid-column: 2;
-    grid-row: 3;
-    min-width: 0;
-    text-align: left;
-  }
-  .idx-toggle {
-    grid-column: 3;
-    grid-row: 1;
-  }
-  .panel-content {
-    padding-left: 2.75rem;
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
   }
 }
 
@@ -310,4 +278,46 @@
 ::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
+}
+
+/* Pulsing status dot (e.g. "Demo clip"); switched off by the reduced-motion rule above */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+.live {
+  animation: pulse 2.4s ease-in-out infinite;
+}
+
+/* Shared-element morph (card tile <-> detail figure, titles). Slower, smooth
+   easing; old/new images fill the group so differing aspect ratios crop
+   instead of stretching. Off entirely under reduced motion. */
+[data-vt-morph] {
+  view-transition-class: vt-media;
+}
+[data-vt-title] {
+  view-transition-class: vt-title;
+}
+::view-transition-group(*.vt-media),
+::view-transition-group(*.vt-title) {
+  animation-duration: 0.7s;
+  animation-timing-function: cubic-bezier(0.2, 0.7, 0.1, 1);
+}
+::view-transition-old(*.vt-media),
+::view-transition-new(*.vt-media) {
+  height: 100%;
+  object-fit: cover;
+  overflow: clip;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
 }

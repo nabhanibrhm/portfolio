@@ -1,0 +1,103 @@
+---
+/* About: a hairline bento. Static Astro except the game tile, which is the one
+   Vue island (GameTile) because it is the only interactive part. */
+import { about, experiences, site, skills } from "../data/site";
+import GameTile from "./GameTile.vue";
+
+const current = experiences.find((e) => e.current);
+const tile = "rounded-[14px] border border-line p-7 min-[860px]:p-8";
+const chipClass =
+  "rounded-full border border-chip px-4 py-2 text-sm transition-colors duration-300 hover:border-accent hover:bg-accent hover:text-accent-on";
+---
+
+<section id="about" aria-labelledby="about-h" class="anchor-offset wrap pt-24 md:pt-[160px]">
+  <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 pb-6" data-reveal>
+    <h2 id="about-h" class="mono m-0 whitespace-nowrap text-mute">(01) — About</h2>
+    <span class="mono whitespace-nowrap text-mute">Profile</span>
+  </div>
+
+  <div class="grid gap-3 min-[860px]:grid-cols-4">
+    <!-- Bio (2 cols x 2 rows) -->
+    <div class={`${tile} flex flex-col gap-6 min-[860px]:col-span-2 min-[860px]:row-span-2`} data-reveal>
+      <span class="mono text-mute">Bio</span>
+      <h3 class="m-0 max-w-[560px] text-[clamp(28px,2.8vw,40px)] font-medium leading-[1.08] tracking-[-0.035em]">
+        {about.headline}
+      </h3>
+      <div class="mt-auto flex max-w-[560px] flex-col gap-4">
+        {about.body.map((para) => <p class="m-0 text-[17px] leading-[1.55] text-mute">{para}</p>)}
+      </div>
+    </div>
+
+    <!-- Game (2 cols x 2 rows) -->
+    <div class={`${tile} flex flex-col min-[860px]:col-span-2 min-[860px]:row-span-2`} data-reveal>
+      <GameTile client:visible={{ rootMargin: "300px" }} />
+    </div>
+
+    <!-- Currently -->
+    {
+      current && (
+        <div class={`${tile} flex min-h-[220px] flex-col gap-4`} data-reveal>
+          <span class="mono flex items-center gap-2.5 text-mute">
+            <span class="live h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
+            Currently
+          </span>
+          <div class="mt-auto flex flex-col gap-1.5">
+            <span class="text-2xl font-medium tracking-[-0.02em]">{current.role}</span>
+            <span class="text-[15px] text-mute">@ {current.company}</span>
+          </div>
+          {current.since && <span class="mono text-mute">Since {current.since}</span>}
+        </div>
+      )
+    }
+
+    <!-- Local time -->
+    <div class={`${tile} flex min-h-[220px] flex-col gap-4`} data-reveal>
+      <span class="mono text-mute">Local time · Asia/Jakarta</span>
+      <span
+        class="mt-auto font-mono text-[52px] font-normal leading-none tracking-[-0.04em] tabular-nums"
+        data-clock>--:--</span
+      >
+      <div class="flex flex-col gap-1.5">
+        <span class="text-[15px]">{site.location}</span>
+        <span class="mono text-mute">{site.coordinates}</span>
+      </div>
+    </div>
+
+    <!-- Toolkit (2 cols) -->
+    <div class={`${tile} flex flex-col gap-5 min-[860px]:col-span-2`} data-reveal>
+      <div class="flex justify-between">
+        <span class="mono text-mute">Toolkit</span>
+        <span class="mono text-mute">{skills.length} tools</span>
+      </div>
+      <ul class="m-0 flex list-none flex-wrap gap-2 p-0">
+        {skills.map((s) => <li class={chipClass}>{s}</li>)}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { gsap, ScrollTrigger } from "../lib/gsap";
+  import { REVEAL } from "../lib/motion";
+  import { onPageLoad } from "../lib/page";
+  import { guard } from "../lib/reveal";
+
+  // Tiles fade up as they enter, staggered when several arrive together.
+  function initReveals() {
+    guard("about", (section) => {
+      const items = Array.from(section.querySelectorAll<HTMLElement>("[data-reveal]"));
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      gsap.set(items, REVEAL.from);
+      ScrollTrigger.batch(items, {
+        id: "reveal",
+        start: "top 88%",
+        once: true,
+        onEnter: (batch) =>
+          gsap.to(batch, { ...REVEAL.to, stagger: REVEAL.stagger, overwrite: true }),
+      });
+      ScrollTrigger.refresh();
+    });
+  }
+
+  onPageLoad("about", initReveals);
+</script>

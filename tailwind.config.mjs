@@ -4,9 +4,10 @@ export default {
   theme: {
     extend: {
       /* ---------------------------------------------------------------------
-       * BRAND PALETTE (strict adherence)
-       * Single source of truth — every component pulls from these tokens,
-       * never raw hex. Overrides the old cream/black theme.
+       * BRAND PALETTE (strict adherence) — exactly three base colours:
+       * black #000000, amber #FCA311, white #FFFFFF. Everything else is a mix
+       * of those. Single source of truth — every component pulls from these
+       * tokens, never raw hex.
        * ------------------------------------------------------------------- */
       colors: {
         // Neutral surfaces & text are theme-driven: the RGB triples live in
@@ -23,51 +24,30 @@ export default {
           muted: "rgb(var(--fg-muted) / <alpha-value>)", // secondary copy
           faint: "rgb(var(--fg-faint) / <alpha-value>)", // tertiary / metadata
         },
-        // Monochrome accent — theme-driven tonal grey (triples in global.css):
-        // sage on the dark theme, mid-grey on light. Highlights "Nabhan" +
-        // primary CTAs. No separate hue is introduced.
+        // Amber accent #FCA311 (triples in global.css), the same in both themes.
+        // Highlights "Nabhan" + primary CTAs. soft = toward white, deep = toward
+        // black (hover/pressed). `on` = text/icons drawn on an amber fill: always
+        // black, since white on amber is ~2:1.
         accent: {
           DEFAULT: "rgb(var(--accent) / <alpha-value>)",
           soft: "rgb(var(--accent-soft) / <alpha-value>)",
           deep: "rgb(var(--accent-deep) / <alpha-value>)",
+          on: "rgb(var(--on-accent) / <alpha-value>)",
         },
-        // SECONDARY: hover states + visual depth, one tone deeper than accent.
-        secondary: {
-          DEFAULT: "rgb(var(--secondary) / <alpha-value>)",
-          soft: "rgb(var(--secondary-soft) / <alpha-value>)",
-          deep: "rgb(var(--secondary-deep) / <alpha-value>)",
-        },
+        // Redesign tokens: plain-colour CSS variables (theme values in global.css).
+        // No alpha modifier support — they already carry their own alpha.
+        line: "var(--line)", // hairlines / dividers
+        chip: "var(--chip)", // chip + tag borders
+        tile: "var(--tile)", // bento / card surface
+        ghost: "var(--ghost)", // oversized faint wordmark
+        ring: "var(--ring)", // focus ring
+        mute: "var(--mute)", // secondary text (== foreground-muted)
       },
       fontFamily: {
         // Self-hosted variable Satoshi (see @font-face in global.css)
-        sans: ["Satoshi", "system-ui", "-apple-system", "Segoe UI", "sans-serif"],
-        mono: ["Satoshi", "ui-monospace", "monospace"],
-      },
-      letterSpacing: {
-        tightest: "-0.04em",
-        kicker: "0.3em",
-      },
-      maxWidth: {
-        shell: "1600px",
-        prose: "640px",
-      },
-      transitionTimingFunction: {
-        smooth: "cubic-bezier(0.22, 1, 0.36, 1)",
-        "smooth-inout": "cubic-bezier(0.76, 0, 0.24, 1)",
-      },
-      keyframes: {
-        "float-slow": {
-          "0%, 100%": { transform: "translate3d(0, 0, 0)" },
-          "50%": { transform: "translate3d(0, -18px, 0)" },
-        },
-        marquee: {
-          from: { transform: "translateX(0)" },
-          to: { transform: "translateX(-50%)" },
-        },
-      },
-      animation: {
-        "float-slow": "float-slow 7s ease-in-out infinite",
-        marquee: "marquee 30s linear infinite",
+        sans: ["Satoshi", "Satoshi Fallback", "system-ui", "-apple-system", "Segoe UI", "sans-serif"],
+        // Self-hosted Geist Mono — small uppercase metadata labels only
+        mono: ['"Geist Mono"', '"Geist Mono Fallback"', "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
       },
     },
   },

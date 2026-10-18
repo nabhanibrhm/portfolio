@@ -1,18 +1,29 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import Hero from "../components/Hero.astro";
-import About from "../components/About.vue";
+import About from "../components/About.astro";
 import Experiences from "../components/Experiences.vue";
-import Projects from "../components/Projects.vue";
+import Projects from "../components/Projects.astro";
 import Contact from "../components/Contact.astro";
+import Footer from "../components/Footer.astro";
 ---
 
 <Layout>
   <Hero />
-  <!-- Vue islands hydrate just before entering the viewport; each owns its
-       own ScrollTrigger reveal + hover interactions. -->
-  <About client:visible={{ rootMargin: "300px" }} />
+  <!-- Interactive Vue islands (the About game tile, the Experience accordion)
+       hydrate just before entering the viewport. -->
+  <About />
   <Experiences client:visible={{ rootMargin: "300px" }} />
-  <Projects client:visible={{ rootMargin: "300px" }} />
+  <Projects />
   <Contact />
+  <Footer />
 </Layout>
+
+<script>
+  import { onPageLoad } from "../lib/page";
+  import { revealItems } from "../lib/reveal";
+
+  // Experience is a Vue island (hydrates late); its rows are server-rendered, so the
+  // scroll reveal is attached here instead of inside the island.
+  onPageLoad("experience", () => revealItems("experience"));
+</script>

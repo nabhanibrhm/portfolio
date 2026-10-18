@@ -8,11 +8,14 @@ import { site } from "../data/site";
 interface Props {
   title?: string;
   description?: string;
+  /** Header variant: full nav (home) or minimal back-link bar (project pages) */
+  headerVariant?: "home" | "project";
 }
 
 const {
   title = `${site.name} — ${site.role}`,
   description = `Portfolio of ${site.name} — ${site.role} building data platforms, streaming pipelines, and interactive experiences.`,
+  headerVariant = "home",
 } = Astro.props;
 ---
 
@@ -25,7 +28,7 @@ const {
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#141413" />
+    <meta name="theme-color" content="#000000" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
@@ -47,6 +50,85 @@ const {
       })();
     </script>
 
+    <!-- Preloader gate, decided before first paint (like the theme above): only on
+         the home page, only on the first visit of this browser session, never with
+         reduced motion. The flag is written here, so if sessionStorage throws we
+         simply skip the preloader. No JS = no class = preloader stays display:none.
+         Preloader.astro reads `has-preloader`; the hero intro waits only if it is set. -->
+    <script is:inline>
+      (() => {
+        try {
+          if (
+            location.pathname === "/" &&
+            !matchMedia("(prefers-reduced-motion: reduce)").matches &&
+            !sessionStorage.getItem("ln-preloaded")
+          ) {
+            sessionStorage.setItem("ln-preloaded", "1");
+            document.documentElement.classList.add("has-preloader", "is-loading");
+          }
+        } catch (e) {}
+      })();
+    </script>
+
+    <!-- Reveal gate. Reveal pre-hidden states (opacity 0 / translated masks) only
+         apply while <html> has `reveal-on`. It is set here, before first paint, and
+         dropped (content renders in its final state, no animations) if GSAP never
+         arrives: no module loaded 2.5 s after DOMContentLoaded, a <script> load
+         error, or a rejected dynamic import. `__revealReady` is set by lib/gsap.ts
+         once GSAP really loaded. Astro's <html> attribute swap strips classes, so
+         the class is re-applied on every astro:after-swap. Giving up also releases
+         the preloader / scroll lock. -->
+    <script is:inline>
+      (() => {
+        var w = window;
+        var html = document.documentElement;
+        w.__revealOn = true;
+        html.classList.add("reveal-on");
+        var sync = function () {
+          html.classList.toggle("reveal-on", w.__revealOn !== false);
+        };
+        document.addEventListener("astro:after-swap", sync);
+        var giveUp = function (why) {
+          if (w.__revealReady || w.__revealOn === false) return;
+          w.__revealOn = false;
+          sync();
+          html.classList.remove("has-preloader", "is-loading");
+          if (w.__releasePreloader) w.__releasePreloader();
+          if (w.console && console.warn)
+            console.warn("[reveal] gate off (" + why + "): showing content without animations");
+        };
+        // A short grace period lets a sibling module that does load win the race
+        var soon = function (why) {
+          setTimeout(function () {
+            giveUp(why);
+          }, 500);
+        };
+        addEventListener(
+          "error",
+          function (e) {
+            var t = e.target;
+            if (t && t.tagName === "SCRIPT") soon("script load error");
+          },
+          true,
+        );
+        addEventListener("unhandledrejection", function (e) {
+          var m = String((e.reason && e.reason.message) || e.reason);
+          if (/import/i.test(m)) soon("module import rejected");
+        });
+        var arm = function () {
+          setTimeout(function () {
+            giveUp("timeout");
+          }, 2500);
+        };
+        if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", arm);
+        else arm();
+      })();
+    </script>
+
+    <!-- Self-hosted fonts are tiny: preload so the swap happens (almost) before first paint -->
+    <link rel="preload" href="/fonts/Satoshi-Variable.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/GeistMono-Variable.woff2" as="font" type="font/woff2" crossorigin />
+
     <!-- SPA-like routing + the hook GSAP rides on for page transitions -->
     <ClientRouter />
 
@@ -56,22 +138,35 @@ const {
         [data-reveal] { opacity: 1 !important; }
         [data-mask] > * { transform: none !important; }
         #preloader { display: none !important; }
+        /* Without JS: accordion panels stay open, JS-only controls are hidden,
+           and the nav links replace the (dead) mobile menu button. */
+        .exp-panel { grid-template-rows: 1fr !important; }
+        .exp-panel-inner { visibility: visible !important; }
+        .exp-plus, #menu-toggle, [data-copy-email] { display: none !important; }
+        #site-header .wrap { height: auto; flex-wrap: wrap; padding-block: 8px; }
+        #site-header .desktop-nav { display: flex !important; flex-wrap: wrap; gap: 4px 20px; margin-right: 0 !important; }
       </style>
     </noscript>
   </head>
 
   <body>
+    <a href="#swap-root" class="skip-link">Skip to content</a>
     <Preloader transition:persist="preloader" />
-    <Header transition:persist="header" />
+    <!-- Not persisted: its variant differs between the home and project pages.
+         Header's script keeps its (document-level) listeners across swaps. -->
+    <Header variant={headerVariant} />
 
     <!-- Everything inside #swap-root is what GSAP fades/slides between routes -->
-    <main id="swap-root" data-swap-root>
+    <main id="swap-root" data-swap-root tabindex="-1" class="outline-none">
       <slot />
     </main>
 
     <script>
       import { gsap, ScrollTrigger } from "../lib/gsap";
+      import { canReveal } from "../lib/reveal";
       import Lenis from "lenis";
+      import "../lib/clock"; // fills [data-clock] (Asia/Jakarta), self-managing
+      import "../lib/magnetic"; // subtle pull on [data-magnetic] CTAs (fine pointers only)
 
       const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       // Parallax is desktop-only: scroll-driven transforms on blurred/large
@@ -113,36 +208,130 @@ const {
         });
       }
 
+      // --- Shared-element navigations (home <-> /projects/*) -------------------
+      // Elements tagged transition:name morph via the browser's View Transition.
+      // For those navigations the GSAP fade/slide on #swap-root must stay out of
+      // the way (it would fade the morphing element's snapshot to nothing), so
+      // `morphNav` switches it off for the current navigation.
+      let morphNav = false;
+      const isProject = (u: URL) => u.pathname.startsWith("/projects/");
+
+      // --- Scroll position after a client-side navigation -----------------------
+      // Astro swaps <html> attributes, which strips Lenis' `lenis` classes (the
+      // CSS then falls back to native smooth scrolling and Astro's own scroll
+      // restore gets lost), so after-swap puts them back. Then, once the new page
+      // is in, land where the user expects: the saved position on back/forward,
+      // or the #hash target (offset by the sticky header). Retried briefly while
+      // islands hydrate / layout settles, but never after the user scrolls.
+      let navType = "push";
+      let userScrolled = false;
+      ["wheel", "touchstart", "keydown"].forEach((ev) =>
+        window.addEventListener(ev, () => (userScrolled = true), { passive: true }),
+      );
+      function jumpTo(y: number) {
+        const l = (window as any).__lenis;
+        if (l) {
+          // Lenis caches the scroll limit; the swapped-in page is a different
+          // height, so refresh it or the jump gets clamped to the old page's end.
+          l.resize?.();
+          l.scrollTo(y, { immediate: true, force: true });
+        }
+        else window.scrollTo({ top: y, behavior: "instant" as ScrollBehavior });
+      }
+      function targetScroll(): number | null {
+        if (navType === "traverse") {
+          const y = history.state?.scrollY;
+          return typeof y === "number" && y > 0 ? y : null;
+        }
+        if (location.hash.length > 1) {
+          let el: HTMLElement | null = null;
+          try {
+            el = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+          } catch (e) {}
+          const header = document.getElementById("site-header");
+          if (el) return Math.max(0, el.getBoundingClientRect().top + window.scrollY - (header?.offsetHeight ?? 72));
+        }
+        return null;
+      }
+      function restoreScroll() {
+        const apply = () => {
+          if (userScrolled) return;
+          const y = targetScroll();
+          if (y !== null && Math.abs(window.scrollY - y) > 2) jumpTo(y);
+        };
+        apply();
+        requestAnimationFrame(apply);
+        setTimeout(apply, 350);
+        setTimeout(() => (navType = "push"), 400);
+      }
+
       // --- Page intro: fade + slide the new route in ---
       function playIntro() {
         const el = root();
         if (!el) return;
-        if (reduce) {
+        if (morphNav) {
+          morphNav = false;
+          gsap.set(el, { clearProps: "all", autoAlpha: 1 });
+          return;
+        }
+        if (reduce || !canReveal()) {
           gsap.set(el, { clearProps: "all", autoAlpha: 1 });
           return;
         }
         gsap.fromTo(
           el,
           { autoAlpha: 0, y: 24 },
-          { autoAlpha: 1, y: 0, duration: 0.7, ease: "power3.out", clearProps: "transform" },
+          { autoAlpha: 1, y: 0, duration: 0.7, ease: "reveal", clearProps: "transform" },
         );
       }
 
       // Fires on first load AND after every View Transition navigation.
       document.addEventListener("astro:page-load", () => {
-        initParallax();
-        ScrollTrigger.refresh();
-        playIntro();
+        try {
+          initParallax();
+          ScrollTrigger.refresh();
+          playIntro();
+        } catch (err) {
+          // Never leave the page hidden behind a failed intro
+          console.error(err);
+          const el = root();
+          if (el) {
+            el.style.opacity = "1";
+            el.style.visibility = "visible";
+            el.style.transform = "none";
+          }
+        }
+        restoreScroll();
       });
 
       // Page exit: intercept the loader so the current route animates out first.
       document.addEventListener("astro:before-preparation", (event: any) => {
-        if (reduce) return;
+        const from: URL = event.from;
+        const to: URL = event.to;
+        navType = event.navigationType;
+        userScrolled = false;
+        // Morph into a project page; morph back to the list on browser back or
+        // the "All projects" link. Any other exit (e.g. the logo) gets the
+        // normal GSAP transition, so the shared name is dropped for it.
+        morphNav =
+          !reduce &&
+          (isProject(to) ||
+            (isProject(from) && (event.navigationType === "traverse" || to.hash === "#projects")));
+        if (isProject(from) && !morphNav) {
+          document
+            .querySelectorAll<HTMLElement>("[data-vt-morph], [data-vt-title]")
+            .forEach((n) => (n.style.viewTransitionName = "none"));
+        }
+        if (reduce || morphNav || !canReveal()) return;
         const el = root();
         if (!el) return;
         const original = event.loader;
         event.loader = async () => {
-          await gsap.to(el, { autoAlpha: 0, y: -16, duration: 0.35, ease: "power2.in" });
+          try {
+            await gsap.to(el, { autoAlpha: 0, y: -16, duration: 0.35, ease: "power2.in" });
+          } catch (err) {
+            console.error(err);
+          }
           await original();
         };
       });
@@ -159,7 +348,19 @@ const {
       // to reveal, and reset scroll position to the top.
       document.addEventListener("astro:after-swap", () => {
         const el = root();
-        if (el && !reduce) gsap.set(el, { autoAlpha: 0 });
+        if (el && !reduce && !morphNav && canReveal()) {
+          gsap.set(el, { autoAlpha: 0 });
+          // Watchdog: if the intro in page-load never ran, don't stay invisible
+          setTimeout(() => {
+            if (getComputedStyle(el).opacity === "0") {
+              el.style.opacity = "1";
+              el.style.visibility = "visible";
+            }
+          }, 2500);
+        }
+        if ((window as any).__lenis) {
+          document.documentElement.classList.add("lenis", "lenis-smooth");
+        }
         (window as any).__lenis?.scrollTo(0, { immediate: true });
         window.scrollTo(0, 0);
       });

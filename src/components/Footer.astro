@@ -1,0 +1,63 @@
+---
+/* One footer, two variants: "home" (© | local time | back to top + ghost
+   wordmark) and "project" (© | email) for the detail pages. */
+import { site } from "../data/site";
+
+interface Props {
+  variant?: "home" | "project";
+}
+const { variant = "home" } = Astro.props;
+const year = new Date().getFullYear();
+// Single string: Astro drops the space between two adjacent {expressions}
+const copyright = `© ${year} ${site.name}`;
+const city = site.location.split(",")[0];
+const wordmark = site.name.split(" ").slice(0, 2).join(" ").toUpperCase();
+---
+
+{
+  variant === "home" ? (
+    <footer class="pt-32">
+      <div class="wrap">
+        <div class="flex flex-col items-start justify-between gap-4 border-t border-line pb-6 pt-6 min-[860px]:flex-row min-[860px]:items-center">
+          <span class="mono text-mute">{copyright}</span>
+          <span class="mono text-mute">
+            {city} · <span data-clock>--:--</span> WIB
+          </span>
+          <a href="#top" data-back-to-top class="mono ul py-3.5 text-mute">
+            Back to top ↑
+          </a>
+        </div>
+      </div>
+      <!-- Oversized faint wordmark, cropped by its container; decorative only -->
+      <div aria-hidden="true" class="flex h-[8.6vw] w-full justify-center overflow-hidden">
+        <span class="whitespace-nowrap text-[12.4vw] font-semibold leading-[0.78] tracking-[-0.06em] text-ghost">
+          {wordmark}
+        </span>
+      </div>
+    </footer>
+  ) : (
+    <footer class="wrap pb-10 pt-20">
+      <div class="flex flex-col items-start justify-between gap-4 min-[860px]:flex-row min-[860px]:items-center">
+        <span class="mono text-mute">{copyright}</span>
+        <a class="mono ul py-3.5 text-mute" href={`mailto:${site.email}`}>
+          {site.email}
+        </a>
+      </div>
+    </footer>
+  )
+}
+
+<script>
+  // Back to top: Lenis when present, instant under reduced motion; focus moves to
+  // the top of the page (#hero, tabindex=-1) so keyboard users aren't left at the bottom.
+  document.addEventListener("click", (e) => {
+    const a = (e.target as HTMLElement).closest?.("a[data-back-to-top]");
+    if (!a) return;
+    e.preventDefault();
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const lenis = (window as any).__lenis;
+    if (lenis) lenis.scrollTo(0, { immediate: reduce });
+    else window.scrollTo({ top: 0, behavior: reduce ? "instant" : "smooth" } as ScrollToOptions);
+    document.getElementById("hero")?.focus({ preventScroll: true });
+  });
+</script>

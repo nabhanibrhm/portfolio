@@ -1,15 +1,20 @@
 <script setup lang="ts">
-/* Tap-to-float dodge — a tiny flappy-style game that lives inside the About
- * portrait card. Pure Canvas 2D, no deps. The memoji is the "bird"; pillars are
- * tinted with the site's --accent. Physics run in a fixed virtual coordinate
- * space (VH tall) and are scaled to whatever pixel size the card happens to be,
- * so it feels identical across breakpoints. */
-import { onBeforeUnmount, onMounted, ref } from "vue";
+/* Tap-to-float dodge — a tiny flappy-style game that lives in the About game
+ * tile (see GameTile.vue, which owns the start/retry button and calls the
+ * exposed `flap()`). Pure Canvas 2D, no deps. The memoji is the "bird"; pillars
+ * are hairline outlines in the theme foreground. Physics run in a fixed virtual
+ * coordinate space (VH tall) and are scaled to whatever pixel size the tile
+ * happens to be, so it feels identical across breakpoints. No RAF loop exists
+ * until the tile is visible (and, under reduced motion, until play starts). */
+import { onBeforeUnmount, onMounted, ref, watch } from "vue";
+
+type GameState = "idle" | "playing" | "over";
+const emit = defineEmits<{ (e: "state", s: GameState): void }>();
 
 const containerEl = ref<HTMLElement | null>(null);
 const canvasEl = ref<HTMLCanvasElement | null>(null);
 
-const state = ref<"idle" | "playing" | "over">("idle");
+const state = ref<GameState>("idle");
 const score = ref(0);
 const best = ref(0);
 const liveMsg = ref("");
@@ -21,8 +26,11 @@ const VH = 360;
 const G = 1500; // gravity (units/s²)
 const FLAP = -410; // instant upward velocity on a tap
 const V_MAX = 720; // terminal fall speed
-const R = 22; // memoji hitbox radius (smaller than the sprite → forgiving)
-const SPRITE_H = 72; // drawn memoji height
+const R = 25; // memoji hitbox radius (a bit smaller than the sprite → forgiving)
+const SPRITE_H = 64; // drawn memoji height (virtual units)
+// The artwork has a lot of transparent padding; draw only its opaque head +
+// shoulders box (px in memoji-smile.webp, 400×600) so the sprite reads at tile scale.
+const SRC = { x: 98, y: 133, w: 202, h: 236 };
 const PW = 52; // pillar width
 const GAP = 132; // vertical gap between pillars
 const SPACING = 210; // horizontal distance between pillars
@@ -48,17 +56,27 @@ let lastTime: number | null = null;
 let reduce = false;
 
 // Colours pulled from the live theme (re-read on light/dark toggle).
-let pillarFill = "rgba(193,193,169,0.15)";
-let pillarStroke = "rgba(193,193,169,0.34)";
-let fallbackFill = "rgba(193,193,169,0.9)";
+let pillarFill = "rgba(255,255,255,0.04)";
+let pillarStroke = "rgba(255,255,255,0.24)";
+let fallbackFill = "rgba(252,163,17,0.9)";
+
+function triple(name: string, fallback: number[]) {
+  const v = getComputedStyle(document.documentElement)
+    .getPropertyValue(name)
+    .trim()
+    .split(/\s+/)
+    .map(Number);
+  return v.length === 3 && v.every((n) => !Number.isNaN(n)) ? v : fallback;
+}
 
 function readColors() {
-  const cs = getComputedStyle(document.documentElement);
-  const accent = cs.getPropertyValue("--accent").trim().split(/\s+/).map(Number);
-  const [r, g, b] = accent.length === 3 ? accent : [193, 193, 169];
-  pillarFill = `rgba(${r},${g},${b},0.15)`;
-  pillarStroke = `rgba(${r},${g},${b},0.34)`;
-  fallbackFill = `rgba(${r},${g},${b},0.9)`;
+  // Pillars follow the foreground (white on dark, black on light), like the
+  // hairlines elsewhere; the fallback ball (image not loaded) uses the accent.
+  const [fr, fg, fb] = triple("--fg", [255, 255, 255]);
+  const [ar, ag, ab] = triple("--accent", [252, 163, 17]);
+  pillarFill = `rgba(${fr},${fg},${fb},0.04)`;
+  pillarStroke = `rgba(${fr},${fg},${fb},0.24)`;
+  fallbackFill = `rgba(${ar},${ag},${ab},0.9)`;
 }
 
 function resize() {
@@ -110,6 +128,9 @@ function flap() {
   if (state.value === "playing") vy = FLAP;
   else start();
 }
+
+watch(state, (s) => emit("state", s));
+defineExpose({ flap });
 
 function gameOver() {
   state.value = "over";
@@ -196,20 +217,26 @@ function render() {
   ctx.setTransform(dpr * scale, 0, 0, dpr * scale, 0, 0);
   ctx.clearRect(0, 0, VW, VH);
 
-  if (state.value !== "idle") {
-    ctx.lineWidth = 1.5;
-    for (const p of pillars) {
-      const topH = p.gapY - GAP / 2;
-      const botY = p.gapY + GAP / 2;
-      ctx.fillStyle = pillarFill;
-      ctx.strokeStyle = pillarStroke;
-      roundRect(p.x, -10, PW, topH + 10, 10);
-      ctx.fill();
-      ctx.stroke();
-      roundRect(p.x, botY, PW, VH - botY + 10, 10);
-      ctx.fill();
-      ctx.stroke();
-    }
+  // Pre-start: a couple of still pillars so the tile doesn't look blank.
+  const shown =
+    state.value === "idle"
+      ? [
+          { x: VW * 0.56, gapY: VH * 0.4 },
+          { x: VW * 0.84, gapY: VH * 0.62 },
+        ]
+      : pillars;
+  ctx.lineWidth = 1.5;
+  for (const p of shown) {
+    const topH = p.gapY - GAP / 2;
+    const botY = p.gapY + GAP / 2;
+    ctx.fillStyle = pillarFill;
+    ctx.strokeStyle = pillarStroke;
+    roundRect(p.x, -10, PW, topH + 10, 10);
+    ctx.fill();
+    ctx.stroke();
+    roundRect(p.x, botY, PW, VH - botY + 10, 10);
+    ctx.fill();
+    ctx.stroke();
   }
 
   // Memoji, tilted toward its velocity for that flappy feel.
@@ -218,9 +245,9 @@ function render() {
   ctx.translate(birdX, y);
   if (state.value === "playing") ctx.rotate(tilt);
   if (imgReady && img) {
-    const w = SPRITE_H * (img.naturalWidth / img.naturalHeight || 0.85);
+    const w = SPRITE_H * (SRC.w / SRC.h);
     ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(img, -w / 2, -SPRITE_H / 2, w, SPRITE_H);
+    ctx.drawImage(img, SRC.x, SRC.y, SRC.w, SRC.h, -w / 2, -SPRITE_H / 2, w, SPRITE_H);
   } else {
     ctx.fillStyle = fallbackFill;
     ctx.beginPath();
@@ -238,6 +265,8 @@ function frame(t: number) {
   lastTime = t;
   update(dt);
   render();
+  // Game over is a still frame: stop burning frames until the next start().
+  if (state.value === "over") stopLoop();
 }
 
 function startLoop() {
@@ -272,10 +301,16 @@ let io: IntersectionObserver | null = null;
 let ro: ResizeObserver | null = null;
 let mo: MutationObserver | null = null;
 let onVisibility: (() => void) | null = null;
-let visible = true;
+let visible = false; // set by the IntersectionObserver
 
+// The loop only exists while it has something to animate: playing, or the idle
+// bob (which reduced motion doesn't get). Nothing runs before the tile is visible.
 function syncLoop() {
-  if (visible && !document.hidden) startLoop();
+  const wanted =
+    visible &&
+    !document.hidden &&
+    (state.value === "playing" || (state.value === "idle" && !reduce));
+  if (wanted) startLoop();
   else stopLoop();
 }
 
@@ -294,6 +329,7 @@ onMounted(() => {
   img = new Image();
   img.onload = () => {
     imgReady = true;
+    if (!running) render(); // idle + not animating: repaint with the sprite
   };
   img.src = "/memoji-smile.webp";
 
@@ -337,57 +373,33 @@ onBeforeUnmount(() => {
 <template>
   <div
     ref="containerEl"
-    class="relative h-[clamp(20rem,52vw,25rem)] w-full select-none outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
+    class="absolute inset-0 select-none focus-visible:[outline-offset:-4px]"
     :style="{ touchAction: state === 'playing' ? 'none' : 'auto' }"
     tabindex="0"
     role="application"
-    aria-label="Mini game: tap or press space to keep the memoji airborne and dodge the pillars"
+    aria-label="Mini game: tap, or press space, to keep the memoji airborne and dodge the pillars"
     @pointerdown="onPointerDown"
     @keydown="onKey"
   >
-    <canvas ref="canvasEl" class="block h-full w-full"></canvas>
+    <canvas ref="canvasEl" class="block h-full w-full" aria-hidden="true"></canvas>
 
     <!-- Live score (during play) -->
     <div
       v-show="state === 'playing'"
-      class="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between p-4 font-mono text-xs"
+      class="mono pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between p-2.5"
     >
-      <span class="text-2xl font-semibold tabular-nums text-foreground">{{ score }}</span>
-      <span class="text-foreground-faint">best {{ best }}</span>
+      <span class="rounded-full bg-background px-2.5 py-1 text-foreground">{{ score }}</span>
+      <span class="rounded-full bg-background px-2.5 py-1 text-mute">best {{ best }}</span>
     </div>
 
-    <!-- Idle: memoji bobs; a real button starts the game -->
-    <div
-      v-show="state === 'idle'"
-      class="pointer-events-none absolute inset-0 flex flex-col items-center justify-end gap-3 pb-6 text-center"
-    >
-      <p class="eyebrow">Bored? play a round</p>
-      <button
-        type="button"
-        class="pointer-events-auto inline-flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-background transition-colors duration-300 ease-smooth hover:bg-accent-deep"
-        @click="start"
-      >
-        Tap to fly
-        <span aria-hidden="true">↑</span>
-      </button>
-    </div>
-
-    <!-- Game over -->
+    <!-- Game over: info only; the tile's own button restarts -->
     <div
       v-show="state === 'over'"
-      class="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-background/55 text-center backdrop-blur-[2px]"
+      class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1 bg-background/60 text-center"
     >
-      <p class="eyebrow">Game over</p>
-      <p class="text-4xl font-semibold tabular-nums text-foreground">{{ score }}</p>
-      <p class="mb-4 font-mono text-xs text-foreground-faint">best {{ best }}</p>
-      <button
-        type="button"
-        class="inline-flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-background transition-colors duration-300 ease-smooth hover:bg-accent-deep"
-        @click="start"
-      >
-        Retry
-        <span aria-hidden="true">↺</span>
-      </button>
+      <p class="mono text-mute">Game over</p>
+      <p class="text-3xl font-medium tabular-nums text-foreground">{{ score }}</p>
+      <p class="mono text-mute">best {{ best }}</p>
     </div>
 
     <p class="sr-only" aria-live="polite">{{ liveMsg }}</p>

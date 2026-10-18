@@ -1,146 +1,134 @@
 ---
-import { site } from "../data/site";
+import { experiences, navLinks, projects, site } from "../data/site";
 ---
 
 <section
   id="hero"
-  class="relative isolate flex min-h-[100svh] flex-col justify-center overflow-hidden pb-24 pt-[calc(var(--header-h)+1rem)]"
+  aria-label="Intro"
+  tabindex="-1"
+  class="wrap flex outline-none min-h-[calc(100svh-var(--header-h))] flex-col pt-14"
 >
-  <!-- Background: masked grid + bottom fade. Given an explicit min-height so the
-       grid backdrop keeps its presence even though the content no longer forces
-       a tall section. -->
-  <div class="pointer-events-none absolute inset-x-0 top-0 -z-10 min-h-[60svh] h-full">
-    <div class="absolute inset-0 hero-grid"></div>
-    <div class="absolute inset-0 bg-gradient-to-b from-background/10 via-background/30 to-background"></div>
+  <!-- Top row: identity (left) · location + local time (right, hidden < 860px) -->
+  <div class="flex items-center justify-between gap-6" data-reveal>
+    <div class="flex items-center gap-4">
+      <span
+        class="relative block h-14 w-14 shrink-0 overflow-hidden rounded-full border border-line bg-background"
+      >
+        <!-- Source is a tall transparent PNG-style canvas: crop + zoom to the face -->
+        <img
+          src="/neutral-memoji.webp"
+          alt="Memoji of Luthfi"
+          width="56"
+          height="56"
+          class="avatar h-full w-full object-cover object-top"
+        />
+      </span>
+      <div class="flex flex-col gap-1.5">
+        <span class="mono text-foreground">{site.name}</span>
+        <span class="mono text-mute">{site.role}</span>
+      </div>
+    </div>
+    <div class="hidden flex-col gap-1.5 text-right min-[860px]:flex">
+      <span class="mono text-foreground">{site.location}</span>
+      <time class="mono text-mute"><span data-clock>--:--</span> WIB · UTC+7</time>
+    </div>
   </div>
 
-  <div class="shell flex w-full flex-col items-center gap-6 text-center md:gap-8">
-    <div class="hero-memoji" data-reveal>
-      <img src="/neutral-memoji.webp" alt="Luthfi Nabhan Ibrahim" width="240" height="240" />
-      <img src="/memoji-smile.webp" alt="" aria-hidden="true" width="240" height="240" class="memoji-smile" />
-    </div>
+  <!-- Headline -->
+  <h1
+    class="mt-auto pt-[72px] text-[clamp(54px,10.2vw,156px)] font-medium leading-[0.9] tracking-[-0.055em]"
+  >
+    {
+      site.headline.map((line) => (
+        <span class="block -mb-[0.06em] pb-[0.14em] pt-[0.03em]" data-mask>
+          <span class="block">
+            {line.map((seg) => (seg.accent ? <span class="acc">{seg.text}</span> : seg.text))}
+          </span>
+        </span>
+      ))
+    }
+  </h1>
 
-    <p class="eyebrow" data-reveal>
-      {site.role} · {site.location}
-    </p>
-
-    <p class="max-w-prose text-lg text-foreground-muted text-balance md:text-xl" data-reveal>
-      {site.tagline}
-    </p>
-
-    <div data-reveal>
+  <!-- Tagline | CTAs -->
+  <div class="mt-12 grid items-end gap-8 min-[860px]:grid-cols-2">
+    <p class="m-0 max-w-[520px] text-xl leading-[1.45] text-mute" data-reveal>{site.tagline}</p>
+    <div class="flex flex-wrap items-center gap-6" data-reveal>
       <a
-        href="/#work"
+        href="/#projects"
         data-nav
-        class="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-medium text-background transition-colors duration-300 ease-smooth hover:bg-accent-deep"
+        data-magnetic
+        class="hero-btn inline-flex h-[52px] items-center gap-2.5 rounded-full bg-accent px-6 text-[15px] font-medium text-accent-on"
       >
         View work
-        <span aria-hidden="true">↓</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 5v14M6 13l6 6 6-6"></path>
+        </svg>
       </a>
+      <a href="/#contact" data-nav class="ul on py-3 text-[15px]">Get in touch</a>
     </div>
   </div>
 
+  <!-- Index bar (hidden < 860px) -->
+  <div
+    class="mt-16 hidden items-center justify-between border-t border-line py-5 min-[860px]:flex"
+    data-reveal
+  >
+    <span class="mono text-mute">Scroll ↓</span>
+    <div class="flex gap-10">
+      {
+        navLinks.map((l, i) => (
+          <a href={l.href} data-nav class="mono ul text-mute">
+            ({String(i + 1).padStart(2, "0")}) {l.label}
+          </a>
+        ))
+      }
+    </div>
+    <span class="mono text-mute">
+      {experiences.length} roles · {projects.length} projects
+    </span>
+  </div>
 </section>
 
 <style>
-  .hero-memoji {
-    position: relative;
-    height: clamp(14rem, 34vw, 24rem);
-    aspect-ratio: 1 / 1;
+  /* Zoom the square crop in on the face (face sits ~47% / 68% of the crop box) */
+  .avatar {
+    transform: scale(1.7);
+    transform-origin: 47% 68%;
   }
-  /* Both faces stacked & cropped identically (source has a tall transparent
-     lower region) so the smile lines up over the neutral one. The bounce +
-     swap loop is driven by GSAP (see the script below). */
-  .hero-memoji img {
-    position: absolute;
-    inset: 0;
-    height: 100%;
-    width: 100%;
-    object-fit: cover;
-    object-position: center top;
-    will-change: transform, opacity;
+  .hero-btn {
+    transition:
+      transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1),
+      translate 0.25s cubic-bezier(0.2, 0.7, 0.2, 1),
+      background-color 0.3s ease;
   }
-  .memoji-smile {
-    opacity: 0;
-  }
-  .hero-grid {
-    background-image:
-      linear-gradient(to right, rgb(var(--fg) / 0.05) 1px, transparent 1px),
-      linear-gradient(to bottom, rgb(var(--fg) / 0.05) 1px, transparent 1px);
-    background-size: 64px 64px;
-    mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 30%, transparent 75%);
-    -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 30%, transparent 75%);
-    /* Rasterize the masked grid into its own GPU layer once. Without this the
-       mask is recomposited every scroll frame — the source of the hero-only
-       jank. On a static layer the compositor just translates the cached texture. */
-    transform: translateZ(0);
-    backface-visibility: hidden;
+  .hero-btn:hover {
+    transform: translateY(-2px);
   }
 </style>
 
 <script>
   import { gsap } from "../lib/gsap";
+  import { MASK, REVEAL } from "../lib/motion";
+  import { onPageLoad } from "../lib/page";
+  import { guard } from "../lib/reveal";
 
+  // Lines unmask (rise from below, staggered), then the fade-ups follow.
   function runHeroIntro() {
-    const hero = document.getElementById("hero");
-    if (!hero) return;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const lines = hero.querySelectorAll<HTMLElement>("[data-mask] > *");
-    const fades = hero.querySelectorAll<HTMLElement>("[data-reveal]");
+    guard("hero", (hero) => {
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const lines = hero.querySelectorAll<HTMLElement>("[data-mask] > *");
+      const fades = hero.querySelectorAll<HTMLElement>("[data-reveal]");
 
-    if (reduce) {
-      gsap.set(lines, { yPercent: 0 });
-      gsap.set(fades, { autoAlpha: 1, y: 0 });
-      return;
-    }
+      if (reduce) {
+        gsap.set(lines, { yPercent: 0 });
+        gsap.set(fades, { autoAlpha: 1, y: 0 });
+        return;
+      }
 
-    const tl = gsap.timeline();
-    tl.fromTo(
-      lines,
-      { yPercent: 110 },
-      { yPercent: 0, duration: 1, ease: "power4.out", stagger: 0.08 },
-    );
-    tl.fromTo(
-      fades,
-      { autoAlpha: 0, y: 18 },
-      { autoAlpha: 1, y: 0, duration: 0.8, ease: "power3.out", stagger: 0.1 },
-      "-=0.55",
-    );
-
-    runMemojiLoop();
-  }
-
-  // Looping bounce + neutral↔smile swap, driven by GSAP. Sequence reads
-  // flat → squash (swap to smile) → stretch/settle → hold → squash (swap to
-  // flat) → stretch/settle → hold → repeat. The image swap fires at each
-  // squash low-point so the bounce hides it. Scaling only the <img>s (not the
-  // wrapper) keeps it clear of the reveal's y/autoAlpha on .hero-memoji.
-  let memojiTl: gsap.core.Timeline | null = null;
-  function runMemojiLoop() {
-    const wrap = document.querySelector<HTMLElement>("#hero .hero-memoji");
-    if (!wrap) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    const faces = wrap.querySelectorAll<HTMLElement>("img");
-    const neutral = wrap.querySelector<HTMLElement>("img:not(.memoji-smile)");
-    const smile = wrap.querySelector<HTMLElement>(".memoji-smile");
-    if (!faces.length || !neutral || !smile) return;
-
-    memojiTl?.kill();
-    memojiTl = gsap.timeline({ repeat: -1 });
-    memojiTl
-      // → smile (hide neutral so it can't show through the smile's transparency)
-      .to(faces, { scale: 0.88, duration: 0.18, ease: "power2.in" }, "+=1.4")
-      .set(smile, { opacity: 1 })
-      .set(neutral, { opacity: 0 })
-      .to(faces, { scale: 1.06, duration: 0.16, ease: "power2.out" })
-      .to(faces, { scale: 1, duration: 0.5, ease: "elastic.out(1, 0.5)" })
-      // → flat
-      .to(faces, { scale: 0.88, duration: 0.18, ease: "power2.in" }, "+=1.4")
-      .set(neutral, { opacity: 1 })
-      .set(smile, { opacity: 0 })
-      .to(faces, { scale: 1.06, duration: 0.16, ease: "power2.out" })
-      .to(faces, { scale: 1, duration: 0.5, ease: "elastic.out(1, 0.5)" });
+      const tl = gsap.timeline();
+      tl.fromTo(lines, MASK.from, { ...MASK.to, stagger: MASK.stagger });
+      tl.fromTo(fades, REVEAL.from, { ...REVEAL.to, stagger: REVEAL.stagger }, "-=0.85");
+    });
   }
 
   // Wait for the preloader on first load; run immediately on later navigations.
@@ -149,5 +137,5 @@ import { site } from "../data/site";
     else window.addEventListener("preloader:done", runHeroIntro, { once: true });
   }
 
-  document.addEventListener("astro:page-load", scheduleHeroIntro);
+  onPageLoad("hero", scheduleHeroIntro);
 </script>
