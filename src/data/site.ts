@@ -110,6 +110,8 @@ export type Project = {
   href?: string;
   /** Optional demo video (files in /public), played when the row is opened. */
   video?: { src: string; poster: string };
+  /** Optional external link where visitors can download a build (e.g. an APK). */
+  download?: { href: string; label: string };
 };
 
 export const projects: Project[] = [
@@ -151,6 +153,10 @@ export const projects: Project[] = [
     video: {
       src: "/videos/throttlepath-promo.mp4",
       poster: "/videos/throttlepath-promo-poster.jpg",
+    },
+    download: {
+      href: "https://drive.google.com/drive/folders/1N10aVLbQiAsHobb_CbDjYr-gFronjz7-",
+      label: "Download APK (Android)",
     },
   },
 ];
