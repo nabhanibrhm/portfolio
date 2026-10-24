@@ -1,6 +1,8 @@
 # AI model routing
 
-> **AI AGENT INSTRUCTION:** Whenever a new change request is received, you must first read this file, identify the target files for the request, and switch to the cheapest approved model listed below before writing any code.
+> **AI AGENT INSTRUCTION:** Before a change, read this file, list the target files,
+> and select the lowest approved tier for the active provider (Claude or OpenAI).
+> Use the switching rules below; never claim a model switch that did not happen.
 
 This is a static Astro site: there is no server and no stored data, so nothing here
 can silently corrupt a record. What *can* go wrong is quieter and lands in production:
@@ -12,17 +14,40 @@ small the diff is; copy and single-section styling route low.
 
 ## Models and effort
 
-| Model | Effort | Use for |
-|---|---|---|
-| **Haiku 5.5** | default | Docs, copy and content in `site.ts`, brand-token values, static assets |
-| **Sonnet 5.5** · medium | medium | One section component, its markup and scoped styles, one `global.css` block |
-| **Sonnet 5.5** · high | high | The layout's GSAP / Lenis / View Transition orchestration, shared helpers in `src/lib/`, build and deploy config, anything spanning three or more files |
-| **Opus 5.5** · high | high | Dependencies and the lockfile, `npm audit` handling, a production build that fails with no known cause |
-| **Opus 5.5** · max | xhigh / max | The Astro 6 / Node 22 / Tailwind 4 migration, a stack or architecture change |
+| Tier | Claude model / effort | OpenAI model / effort | Use for |
+|---|---|---|---|
+| T1 | Haiku 5.5 / default | GPT-6 Luna (`gpt-6-luna`) / low | Docs, copy and content in `site.ts`, brand-token values, static asset swaps |
+| T2 | Sonnet 5.5 / medium | GPT-6.1 Sol (`gpt-6.1-sol`) / medium | One section component, markup and scoped styles, one `global.css` block, video creation or encoding |
+| T3 | Sonnet 5.5 / high | GPT-6.1 Sol (`gpt-6.1-sol`) / high | GSAP / Lenis / View Transition orchestration, shared helpers, build and deploy config, changes spanning three or more files |
+| T4 | Opus 5.5 / high | GPT-6 Astra (`gpt-6-astra`) / high | Dependencies and lockfile, audit handling, unexplained production build failures |
+| T5 | Opus 5.5 / max | GPT-6 Astra (`gpt-6-astra`) / max | Astro 6 / Node 22 / Tailwind 4 migration, stack or architecture changes |
+
+These are project routing choices, not claims of exact cross-provider equivalence
+or pricing. OpenAI names and supported efforts were checked against the available
+Codex host models on 25 Oct 2026. The efficiency-first approach follows
+[OpenAI model-selection guidance](https://developers.openai.com/api/docs/guides/model-selection).
+Use only models actually exposed by the current host; do not substitute invented IDs.
+The Claude labels are retained from the original guide.
 
 **How to switch.**
-- **Session:** if the current model or effort is higher than needed, say so in one line and ask the user to switch with `/model`. If it's lower, stop and ask for the higher one before writing code.
-- **Subagents:** set `model` (`haiku`, `sonnet` or `opus`) and `effort` on the agent call to match the table. Delegating cheap work this way is preferred over switching the whole session.
+- **Session:** recommend the model and effort before implementation. If the current
+  setting is higher, offer the lower setting without blocking authorized work.
+  If it is lower than required, request the required setting before implementation;
+  read-only investigation can continue. Use the app's model selector, or `/model`
+  where supported. A recommendation does not change the running model.
+- **Subagents:** this guide authorizes delegating a bounded implementation task to
+  the listed provider model when model overrides are available. In Codex, use the
+  exact ID above, `reasoning_effort`, and `fork_turns="none"`; include the task,
+  target files, and applicable repository rules in the handoff. The parent reviews
+  the result. Avoid delegation for trivial edits when coordination costs more.
+- **Unavailable model:** report it and offer another available model at the same
+  or higher tier. Do not block solely because the other provider is unavailable.
+- **Routing-guide edits:** updating this guide is T1 and may be completed in the
+  current session so outdated routing instructions do not block their own repair.
+
+The Claude headings and shorthand below identify tiers for **both** providers:
+Haiku = T1; Sonnet medium = T2; Sonnet high = T3; Opus high = T4;
+Opus max = T5. Apply the OpenAI column when working in Codex/ChatGPT.
 
 ---
 
