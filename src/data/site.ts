@@ -227,6 +227,10 @@ export const projects: Project[] = [
     description:
       "AI-powered conversational interface for HRIS data access and employee support queries using LLM, Python, Java, and APIs.",
     tags: ["Python", "LLM", "Java"],
+    video: {
+      src: "/videos/hris-ai-chatbot-promo.mp4",
+      poster: "/videos/hris-ai-chatbot-promo-poster.jpg",
+    },
     stack: ["Python", "LLM", "Java", "SQL"],
   },
   {
