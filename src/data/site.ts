@@ -189,6 +189,8 @@ export type Project = {
   description: string;
   /** 2–3 short chips for the card */
   tags: string[];
+  /** Optional playable clip for a card without a detail page (files in /public). */
+  video?: { src: string; poster: string };
   /** Full tech list */
   stack?: string[];
   links?: ProjectLink[];
@@ -203,6 +205,10 @@ export const projects: Project[] = [
     description:
       "Created a big data pipeline for processing and analyzing large-scale financial transactions using Python, Spark, Airflow, and Iceberg.",
     tags: ["Python", "Airflow", "Iceberg"],
+    video: {
+      src: "/videos/big-data-pipeline-promo.mp4",
+      poster: "/videos/big-data-pipeline-promo-poster.jpg",
+    },
     stack: ["Python", "Airflow", "Iceberg", "Spark", "PostgreSQL"],
   },
   {

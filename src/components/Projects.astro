@@ -87,25 +87,40 @@ const chipClass =
           );
         }
 
-        // --- Typographic card: no detail page, so not a link -----------------
+        // --- Standard card: no detail page, so not a link --------------------
         return (
           <article class="flex flex-col gap-5" data-reveal>
             <div class="relative aspect-[16/10] overflow-hidden rounded-[14px] border border-line bg-tile">
-              <div class="absolute inset-0 flex flex-col justify-between p-5 sm:p-7">
-                <span class="mono flex items-center gap-2.5 text-mute">
-                  <span class="h-2 w-2 bg-accent" aria-hidden="true" />
-                  {p.category}
-                </span>
-                <div class="flex items-end justify-between gap-4">
-                  <span
-                    class="text-[clamp(96px,11vw,176px)] font-medium leading-[0.78] tracking-[-0.07em]"
-                    aria-hidden="true"
-                  >
-                    {num}
+              {p.video ? (
+                <video
+                  src={p.video.src}
+                  poster={p.video.poster}
+                  controls
+                  playsinline
+                  preload="none"
+                  aria-label={`${p.title} demo video`}
+                  tabindex="0"
+                  class="absolute inset-0 h-full w-full object-contain"
+                >
+                  <a href={p.video.src}>Watch the {p.title} demo video</a>
+                </video>
+              ) : (
+                <div class="absolute inset-0 flex flex-col justify-between p-5 sm:p-7">
+                  <span class="mono flex items-center gap-2.5 text-mute">
+                    <span class="h-2 w-2 bg-accent" aria-hidden="true" />
+                    {p.category}
                   </span>
-                  {p.metric && <span class="mono text-right text-foreground">{p.metric}</span>}
+                  <div class="flex items-end justify-between gap-4">
+                    <span
+                      class="text-[clamp(96px,11vw,176px)] font-medium leading-[0.78] tracking-[-0.07em]"
+                      aria-hidden="true"
+                    >
+                      {num}
+                    </span>
+                    {p.metric && <span class="mono text-right text-foreground">{p.metric}</span>}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             <div class="flex flex-col gap-3">
