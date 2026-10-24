@@ -96,10 +96,13 @@ const chipClass =
                   src={p.video.src}
                   poster={p.video.poster}
                   controls
+                  muted
                   playsinline
+                  loop
                   preload="none"
                   aria-label={`${p.title} demo video`}
                   tabindex="0"
+                  data-card-video
                   class="absolute inset-0 h-full w-full object-contain"
                 >
                   <a href={p.video.src}>Watch the {p.title} demo video</a>
@@ -195,31 +198,43 @@ const chipClass =
       .forEach((v) => v.pause());
   }
 
-  // Card clips play on hover / keyboard focus, and while >=60% in view; they
-  // pause as soon as none of those hold. Reduced motion: poster only.
+  // Clips autoplay while >=60% in view; featured links also preview on hover /
+  // focus. Native controls keep a user's pause until they resume playback.
   function initVideos() {
     cleanup();
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const videos = document.querySelectorAll<HTMLVideoElement>("video[data-card-video]");
     if (!videos.length) return;
     // Videos swapped in by the client router can end up with a failed media load
     // ("rejected by URL safety check" in Chromium); reset them (preload=none: no download).
     videos.forEach((v) => v.load());
+    // Keep native controls usable after swaps, even when autoplay is disabled.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     ac = new AbortController();
     const { signal } = ac;
-    const state = new Map<Element, { inView: boolean; hover: boolean; focus: boolean }>();
+    const state = new Map<Element, {
+      inView: boolean;
+      hover: boolean;
+      focus: boolean;
+      userPaused: boolean;
+      pendingPauses: number;
+    }>();
     const sync = (v: HTMLVideoElement) => {
       const s = state.get(v)!;
-      if (s.inView || s.hover || s.focus) v.play().catch(() => {});
-      else v.pause();
+      if (!s.userPaused && (s.inView || s.hover || s.focus)) {
+        v.play().catch(() => {});
+      } else if (!v.paused) {
+        // pause events are queued; distinguish our offscreen pause from controls.
+        s.pendingPauses++;
+        v.pause();
+      }
     };
 
     io = new IntersectionObserver(
       (entries) => {
         entries.forEach((en) => {
           const v = en.target as HTMLVideoElement;
-          state.get(v)!.inView = en.isIntersecting;
+          state.get(v)!.inView = en.isIntersecting && en.intersectionRatio >= 0.6;
           sync(v);
         });
       },
@@ -227,7 +242,21 @@ const chipClass =
     );
 
     videos.forEach((v) => {
-      state.set(v, { inView: false, hover: false, focus: false });
+      state.set(v, {
+        inView: false, hover: false, focus: false, userPaused: false, pendingPauses: 0,
+      });
+      io!.observe(v);
+      if (v.controls) {
+        v.addEventListener("pause", () => {
+          const s = state.get(v)!;
+          if (s.pendingPauses) s.pendingPauses--;
+          else s.userPaused = true;
+        }, { signal });
+        v.addEventListener("play", () => {
+          state.get(v)!.userPaused = false;
+        }, { signal });
+        return;
+      }
       const card = v.closest<HTMLElement>("[data-card]") ?? v;
       card.addEventListener(
         "pointerenter",
@@ -263,7 +292,6 @@ const chipClass =
         },
         { signal },
       );
-      io!.observe(v);
     });
   }
 
